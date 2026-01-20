@@ -23,6 +23,7 @@ public class Vision {
     int OBELISK_PIPELINE = 6;
 
 
+
     public Vision(HardwareMap hardwareMap){
         LL = hardwareMap.get(Limelight3A.class, "Limelight");
         LL.pipelineSwitch(4);

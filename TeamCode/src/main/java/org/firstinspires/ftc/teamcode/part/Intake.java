@@ -18,7 +18,6 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 public class Intake implements Part{
     DcMotorEx motor;
     ColorSensor colorSensor;
-    private Object Constants;
 
 
     @Override
