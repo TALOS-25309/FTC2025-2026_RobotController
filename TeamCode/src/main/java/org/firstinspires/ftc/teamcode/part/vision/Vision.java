@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.part;
+package org.firstinspires.ftc.teamcode.part.vision;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes.FiducialResult;
@@ -6,39 +6,39 @@ import com.qualcomm.hardware.limelightvision.LLStatus;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.teamcode.part.vision.VisionConst.*;
+
+
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
 import java.util.List;
 
 public class Vision {
-    private final Limelight3A LL;
+    private  Limelight3A LL;
     private double x,y,z;
     private boolean detected;
 
-    enum PIPELINE {
-        OBELISK_DETECTION,
-        RED_GOAL,
-        BLUE_GOAL
-    };
-    int RED_PIPELINE = 4;
-    int BLUE_PIPELINE = 5;
-    int OBELISK_PIPELINE = 6;
-
-
-
-    public Vision(HardwareMap hardwareMap){
+    public void init(HardwareMap hardwareMap, Telemetry telemetry) {
         LL = hardwareMap.get(Limelight3A.class, "Limelight");
-        LL.pipelineSwitch(4);
     }
-
-    public void start(){
+    public void start() {;
         LL.setPollRateHz(250);
         LL.start();
     }
-    public void setPipeline(PIPELINE pipeline) throws Exception {
+    public void setPipeline(PIPELINE pipeline) {
         switch (pipeline){
-            case RED_GOAL: LL.pipelineSwitch(RED_PIPELINE);
-            case BLUE_GOAL: LL.pipelineSwitch(BLUE_PIPELINE);
-            case OBELISK_DETECTION: LL.pipelineSwitch(OBELISK_PIPELINE);
-            default: throw new Exception("잘못된 pipeline 접근 오류");
+            case RED_GOAL:
+                LL.pipelineSwitch(VisionConst.RED_PIPELINE);
+                break;
+            case BLUE_GOAL:
+                LL.pipelineSwitch(VisionConst.BLUE_PIPELINE);
+                break;
+            case OBELISK_DETECTION:
+                LL.pipelineSwitch(VisionConst.OBELISK_PIPELINE);
+                break;
+            default:
+                LL.pipelineSwitch(VisionConst.RED_PIPELINE);
+                break;
         }
     }
 
@@ -77,8 +77,8 @@ public class Vision {
         return fiducials.get(0).getFiducialId();
     }
 
-    public LLStatus getStatus(){
-        return status;
+    public double getTimestamp(){
+        return LL.getLatestResult().getTimestamp();
     }
 
     public boolean tagDetected(){

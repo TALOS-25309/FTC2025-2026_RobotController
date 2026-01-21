@@ -31,6 +31,8 @@ public class SmartGamepad {
         public boolean isReleased() { return !now && last; }
         public boolean isHeld() { return now && last; }
         public boolean isFree() { return !now; }
+        public boolean isDown() { return now; }
+
     }
     public static class Trigger {
         private final double now, last;

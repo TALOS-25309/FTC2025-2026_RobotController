@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.feature.PID;
 
-import org.firstinspires.ftc.teamcode.part.Vision;
+import org.firstinspires.ftc.teamcode.part.vision.Vision;
 
 
 public class Turret_Dynamic implements Part
