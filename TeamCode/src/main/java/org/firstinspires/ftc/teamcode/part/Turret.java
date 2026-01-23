@@ -15,7 +15,7 @@ import org.firstinspires.ftc.teamcode.part.vision.Vision;
 public class Turret implements Part {
 
     DcMotorEx motor;
-//    DcMotorEx encoder;
+    DcMotorEx encoder;
     PID pidController;
 
     boolean PIDActivated;
@@ -29,10 +29,10 @@ public class Turret implements Part {
     @Override
     public void init(HardwareMap hardwareMap, Telemetry telemetry) {
         motor = hardwareMap.get(DcMotorEx.class, "turret");
-//        encoder = hardwareMap.get(DcMotorEx.class, "turret");
+        encoder = hardwareMap.get(DcMotorEx.class, "turret");
 //        encoder = motor;
 
-        pidController = new PID(P,I,D);
+        pidController = new PID(TURRET_PID_P, TURRET_PID_I, TURRET_PID_D);
     }
 
     @Override
@@ -47,11 +47,15 @@ public class Turret implements Part {
 
     @Override
     public void update() {
-//        double position = encoder.getCurrentPosition();
-//        TelemetrySystem.addClassData("TURRET", "position", position);
+        double position = encoder.getCurrentPosition();
+        TelemetrySystem.addClassData("TURRET", "position", position);
         TelemetrySystem.addClassData("TURRET", "PIDActivated", PIDActivated);
-        TelemetrySystem.addClassData("TURRET", "l", "52");
-        runPID();
+        if (PIDActivated){
+            runPID();
+        }
+        else {
+            motor.setPower(0);
+        }
 
 //        if (PIDActivated) {
 //            runPID();
@@ -80,7 +84,7 @@ public class Turret implements Part {
 
     public void runPID(){
         motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        pidController.updatePID(P,I,D);
+        pidController.updatePID(TURRET_PID_P, TURRET_PID_I, TURRET_PID_D);
         double currentAngle = vision.getPos()[0];
         TelemetrySystem.addClassData("VISION","timestamp", vision.getTimestamp());
         double targetAngle = 0;

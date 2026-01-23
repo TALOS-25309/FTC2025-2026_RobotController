@@ -1,14 +1,16 @@
-package org.firstinspires.ftc.teamcode.opmode.teleop;
+package org.firstinspires.ftc.teamcode.opmode.test;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.feature.SmartGamepad;
 import org.firstinspires.ftc.teamcode.feature.TelemetrySystem;
 import org.firstinspires.ftc.teamcode.part.Constants;
-import org.firstinspires.ftc.teamcode.part.NewDrive;
+import org.firstinspires.ftc.teamcode.part.Drive;
 import org.firstinspires.ftc.teamcode.part.Part;
 import org.firstinspires.ftc.teamcode.part.intake.Intake;
+import org.firstinspires.ftc.teamcode.part.intake.IntakeState;
 import org.firstinspires.ftc.teamcode.part.shooter.Shooter;
 import org.firstinspires.ftc.teamcode.part.Turret;
 import org.firstinspires.ftc.teamcode.part.shooter.ShooterState;
@@ -16,19 +18,24 @@ import org.firstinspires.ftc.teamcode.part.vision.Vision;
 import org.firstinspires.ftc.teamcode.part.vision.VisionConst;
 
 @TeleOp(name = "TeleOp")
-public class TeleOpRed extends OpMode {
+public class test extends OpMode {
 
     private SmartGamepad smartGamepad1, smartGamepad2;
     private final Intake intake = new Intake();
-    private final NewDrive drive = new NewDrive();
+    private final Drive drive = new Drive();
     private final Vision vision = new Vision();
     private final Turret turret = new Turret(vision);
     private final Shooter shooter = new Shooter(vision);
+
+    FtcDashboard dashboard;
 
     private Part[] parts = new Part[]{};
 
     @Override
     public void init() {
+        dashboard = FtcDashboard.getInstance();
+        telemetry = dashboard.getTelemetry();
+
         parts = new Part[]{intake, turret, shooter, drive};
         for (Part part: parts) {
             part.init(hardwareMap, telemetry);
@@ -51,9 +58,10 @@ public class TeleOpRed extends OpMode {
         vision.setPipeline(VisionConst.PIPELINE.RED_GOAL);
     }
 
+
     @Override
     public void loop() {
-//        handleDrive();
+        handleDrive();
 
         // [read gamepads Signal]
         // INTAKE
@@ -64,9 +72,6 @@ public class TeleOpRed extends OpMode {
                     intake.cmdRun();
                     break;
                 case RUN:
-                    intake.cmdReverseRun();
-                    break;
-                case REVERSE_RUN:
                     intake.stop();
                     break;
                 default:
@@ -75,11 +80,12 @@ public class TeleOpRed extends OpMode {
             }
         }
 
-        // SHOOTER ANGLE
-        if (smartGamepad2.buttonA().isPressed()) {
-            TelemetrySystem.addClassData("GAMEPAD", "A", "clicked");
-            shooter.cmdSetServoAngle(Constants.SHOOTER_DOWN_ANGLE);
+        if (intake.state == IntakeState.RUN){
+            intake.cmdRun();
         }
+
+        // SHOOTER ANGLE
+        shooter.cmdSetServoAngle(Constants.AAA_SHOOTER_TEST_ANGLE);
 
         // SHOOTER STOPPER TOGGLE
         if (smartGamepad2.buttonB().isPressed()) {
@@ -89,21 +95,20 @@ public class TeleOpRed extends OpMode {
 
         if (smartGamepad2.buttonY().isPressed()){
             if (shooter.shooterState == ShooterState.RUN) {
-                shooter.cmdShooterRun();
                 shooter.shooterState = ShooterState.STOP;
             }
             else{
-                shooter.cmdShooterStop();
                 shooter.shooterState = ShooterState.RUN;
             }
         }
-
-        double x,y, rx;
-        x = -smartGamepad2.triggerLeftStickX().getValue();
-        y = -smartGamepad2.triggerLeftStickY().getValue();
-        rx = smartGamepad2.triggerRightStickX().getValue();
-        drive.setDrivePowers(x,y,rx);
-
+        if (shooter.shooterState == ShooterState.RUN) {
+            shooter.shooterMotorUpper.setPower(1);
+            shooter.shooterMotorLower.setPower(1);
+        }
+        else{
+            shooter.shooterMotorUpper.setPower(0);
+            shooter.shooterMotorLower.setPower(0);
+        }
 
         vision.update();
         // update parts
@@ -118,6 +123,7 @@ public class TeleOpRed extends OpMode {
         smartGamepad2.update();
     }
 
+
     @Override
     public void stop() {
         for (Part part : parts){
@@ -129,53 +135,53 @@ public class TeleOpRed extends OpMode {
 
 
     // RoadRunner 로 대체 후, 제거 예정
-//    private void handleDrive() {
-//        double power = Constants.DRIVE_POWER;
-//
-//        if (smartGamepad2.buttonDPadUp().isDown()) {
-//            drive.motorLF.setPower(power);
-//            drive.motorLR.setPower(power);
-//            drive.motorRF.setPower(power);
-//            drive.motorRR.setPower(power);
-//        }
-//        else if (smartGamepad2.buttonDPadDown().isDown()) {
-//            drive.motorLF.setPower(-power);
-//            drive.motorLR.setPower(-power);
-//            drive.motorRF.setPower(-power);
-//            drive.motorRR.setPower(-power);
-//        }
-//        else if (smartGamepad2.buttonDPadRight().isDown()) {
-//            drive.motorLF.setPower(power);
-//            drive.motorLR.setPower(-power);
-//            drive.motorRF.setPower(-power);
-//            drive.motorRR.setPower(power);
-//        }
-//        else if (smartGamepad2.buttonDPadLeft().isDown()) {
-//            drive.motorLF.setPower(-power);
-//            drive.motorLR.setPower(power);
-//            drive.motorRF.setPower(power);
-//            drive.motorRR.setPower(-power);
-//        }
-//        else if (smartGamepad2.buttonLeftBumper().isDown()) {
-//            // CCW Rotate
-//            drive.motorLF.setPower(-power);
-//            drive.motorLR.setPower(-power);
-//            drive.motorRF.setPower(power);
-//            drive.motorRR.setPower(power);
-//        }
-//        else if (smartGamepad2.buttonRightBumper().isDown()) {
-//            // CW Rotate
-//            drive.motorLF.setPower(power);
-//            drive.motorLR.setPower(power);
-//            drive.motorRF.setPower(-power);
-//            drive.motorRR.setPower(-power);
-//        }
-//        else {
-//            drive.motorLF.setPower(0);
-//            drive.motorLR.setPower(0);
-//            drive.motorRF.setPower(0);
-//            drive.motorRR.setPower(0);
-//        }
-//    }
+    private void handleDrive() {
+        double power = Constants.DRIVE_POWER;
+
+        if (smartGamepad2.buttonDPadUp().isDown()) {
+            drive.motorLF.setPower(power);
+            drive.motorLR.setPower(power);
+            drive.motorRF.setPower(power);
+            drive.motorRR.setPower(power);
+        }
+        else if (smartGamepad2.buttonDPadDown().isDown()) {
+            drive.motorLF.setPower(-power);
+            drive.motorLR.setPower(-power);
+            drive.motorRF.setPower(-power);
+            drive.motorRR.setPower(-power);
+        }
+        else if (smartGamepad2.buttonDPadRight().isDown()) {
+            drive.motorLF.setPower(power);
+            drive.motorLR.setPower(-power);
+            drive.motorRF.setPower(-power);
+            drive.motorRR.setPower(power);
+        }
+        else if (smartGamepad2.buttonDPadLeft().isDown()) {
+            drive.motorLF.setPower(-power);
+            drive.motorLR.setPower(power);
+            drive.motorRF.setPower(power);
+            drive.motorRR.setPower(-power);
+        }
+        else if (smartGamepad2.buttonLeftBumper().isDown()) {
+            // CCW Rotate
+            drive.motorLF.setPower(-power);
+            drive.motorLR.setPower(-power);
+            drive.motorRF.setPower(power);
+            drive.motorRR.setPower(power);
+        }
+        else if (smartGamepad2.buttonRightBumper().isDown()) {
+            // CW Rotate
+            drive.motorLF.setPower(power);
+            drive.motorLR.setPower(power);
+            drive.motorRF.setPower(-power);
+            drive.motorRR.setPower(-power);
+        }
+        else {
+            drive.motorLF.setPower(0);
+            drive.motorLR.setPower(0);
+            drive.motorRF.setPower(0);
+            drive.motorRR.setPower(0);
+        }
+    }
 
 }

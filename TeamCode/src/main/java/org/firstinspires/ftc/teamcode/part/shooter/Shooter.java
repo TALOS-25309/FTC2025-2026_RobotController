@@ -2,20 +2,22 @@ package org.firstinspires.ftc.teamcode.part.shooter;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.feature.TelemetrySystem;
-import org.firstinspires.ftc.teamcode.part.Constants;
+import static org.firstinspires.ftc.teamcode.part.Constants.*;
 import org.firstinspires.ftc.teamcode.part.Part;
 import org.firstinspires.ftc.teamcode.part.vision.Vision;
 
 
 
 public class Shooter implements Part {
-    DcMotorEx shooterMotorUpper;
-    DcMotorEx shooterMotorLower;
+    public DcMotorEx shooterMotorUpper;
+    public DcMotorEx shooterMotorLower;
 
     Servo shooterServo;
     Servo stopper;
@@ -24,7 +26,9 @@ public class Shooter implements Part {
 
     public StopperState stopperState;
     public ShooterState shooterState;
-    public double hoodAngle;
+    public double angle;
+    public double targetVel; // m/s
+    public double v;
 
     public Shooter(Vision vision){
         this.vision = vision;
@@ -34,6 +38,12 @@ public class Shooter implements Part {
     public void init(HardwareMap hardwareMap, Telemetry telemetry) {
         shooterMotorUpper = hardwareMap.get(DcMotorEx.class, "shooter_motor1");
         shooterMotorLower = hardwareMap.get(DcMotorEx.class, "shooter_motor2");
+
+        shooterMotorUpper.setDirection(DcMotorSimple.Direction.REVERSE);
+        shooterMotorLower.setDirection(DcMotorSimple.Direction.FORWARD);
+
+        shooterMotorUpper.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        shooterMotorLower.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         shooterServo = hardwareMap.get(Servo.class, "servo_hood");
         stopper = hardwareMap.get(Servo.class, "servo_stopper");
@@ -47,8 +57,8 @@ public class Shooter implements Part {
 
         cmdShooterRun();
 
-        shooterServo.setPosition(Constants.SHOOTER_DOWN_ANGLE);
-        stopper.setPosition(Constants.STOPPER_CLOSE_ANGLE);
+        shooterServo.setPosition(SHOOTER_DOWN_ANGLE);
+        stopper.setPosition(SHOOTER_STOPPER_CLOSE_ANGLE);
 
         shooterState = ShooterState.RUN;
         stopperState = StopperState.CLOSE;
@@ -57,9 +67,18 @@ public class Shooter implements Part {
 
     @Override
     public void update() {
-        TelemetrySystem.addClassData("Shooter", "ShooterRunning", Constants.SHOOTER_RUNNING);
+        TelemetrySystem.addClassData("Shooter", "ShooterRunning", SHOOTER_RUNNING);
 
-        if (!Constants.SHOOTER_RUNNING){
+        v = (double)AAA_SHOOTER_VELOCITY;
+
+
+        double velTick = shooterMotorLower.getVelocity(); // Tick/s
+        double ticksPerRev = 145.1;
+        double RPM = (velTick / ticksPerRev) * 60.0;
+        TelemetrySystem.addClassData("Shooter", "RPM", RPM);
+
+
+        if (!SHOOTER_RUNNING){
             cmdShooterStop();
         }
     }
@@ -71,11 +90,11 @@ public class Shooter implements Part {
 
 
     public void stopperOpen(){
-        stopper.setPosition(Constants.STOPPER_OPEN_ANGLE);
+        stopper.setPosition(SHOOTER_STOPPER_OPEN_ANGLE);
         stopperState = StopperState.OPEN;
     }
     public void stopperClose(){
-        stopper.setPosition(Constants.STOPPER_CLOSE_ANGLE);
+        stopper.setPosition(SHOOTER_STOPPER_CLOSE_ANGLE);
         stopperState = StopperState.CLOSE;
     }
 
@@ -83,8 +102,10 @@ public class Shooter implements Part {
 
     // Commands
     public void cmdShooterRun(){
-        shooterMotorUpper.setPower(Constants.SHOOTER_POWER);
-        shooterMotorLower.setPower(-1 * Constants.SHOOTER_POWER);
+        // m/s / m = 1/s
+//        double angVel = 2 * targetVel * SHOOTER_GEAR_RATIO / SHOOTER_WHEEL_RADIUS ;
+        shooterMotorUpper.setVelocity(v, AngleUnit.RADIANS);
+        shooterMotorLower.setVelocity(v, AngleUnit.RADIANS);
         shooterState = ShooterState.RUN;
     }
     public void cmdShooterStop(){
