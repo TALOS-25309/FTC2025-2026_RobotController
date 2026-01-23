@@ -10,6 +10,8 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.feature.TelemetrySystem;
 import static org.firstinspires.ftc.teamcode.part.Constants.*;
+
+import org.firstinspires.ftc.teamcode.part.Constants;
 import org.firstinspires.ftc.teamcode.part.Part;
 import org.firstinspires.ftc.teamcode.part.vision.Vision;
 
@@ -42,8 +44,8 @@ public class Shooter implements Part {
         shooterMotorUpper.setDirection(DcMotorSimple.Direction.REVERSE);
         shooterMotorLower.setDirection(DcMotorSimple.Direction.FORWARD);
 
-        shooterMotorUpper.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        shooterMotorLower.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        shooterMotorUpper.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        shooterMotorLower.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         shooterServo = hardwareMap.get(Servo.class, "servo_hood");
         stopper = hardwareMap.get(Servo.class, "servo_stopper");
@@ -67,17 +69,15 @@ public class Shooter implements Part {
 
     @Override
     public void update() {
-        TelemetrySystem.addClassData("Shooter", "ShooterRunning", SHOOTER_RUNNING);
-
         v = (double)AAA_SHOOTER_VELOCITY;
-
 
         double velTick = shooterMotorLower.getVelocity(); // Tick/s
         double ticksPerRev = 145.1;
         double RPM = (velTick / ticksPerRev) * 60.0;
         TelemetrySystem.addClassData("Shooter", "RPM", RPM);
 
-
+        TelemetrySystem.addClassData("Shooter", "Angle", AAA_SHOOTER_TEST_ANGLE);
+        shooterServo.setPosition(AAA_SHOOTER_TEST_ANGLE);
         if (!SHOOTER_RUNNING){
             cmdShooterStop();
         }
@@ -103,7 +103,6 @@ public class Shooter implements Part {
     // Commands
     public void cmdShooterRun(){
         // m/s / m = 1/s
-//        double angVel = 2 * targetVel * SHOOTER_GEAR_RATIO / SHOOTER_WHEEL_RADIUS ;
         shooterMotorUpper.setVelocity(v, AngleUnit.RADIANS);
         shooterMotorLower.setVelocity(v, AngleUnit.RADIANS);
         shooterState = ShooterState.RUN;

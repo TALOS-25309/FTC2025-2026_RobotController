@@ -80,12 +80,6 @@ public class test extends OpMode {
             }
         }
 
-        if (intake.state == IntakeState.RUN){
-            intake.cmdRun();
-        }
-
-        // SHOOTER ANGLE
-        shooter.cmdSetServoAngle(Constants.AAA_SHOOTER_TEST_ANGLE);
 
         // SHOOTER STOPPER TOGGLE
         if (smartGamepad2.buttonB().isPressed()) {
@@ -95,19 +89,11 @@ public class test extends OpMode {
 
         if (smartGamepad2.buttonY().isPressed()){
             if (shooter.shooterState == ShooterState.RUN) {
-                shooter.shooterState = ShooterState.STOP;
+                shooter.cmdShooterStop();
             }
             else{
-                shooter.shooterState = ShooterState.RUN;
+                shooter.cmdShooterRun();
             }
-        }
-        if (shooter.shooterState == ShooterState.RUN) {
-            shooter.shooterMotorUpper.setPower(1);
-            shooter.shooterMotorLower.setPower(1);
-        }
-        else{
-            shooter.shooterMotorUpper.setPower(0);
-            shooter.shooterMotorLower.setPower(0);
         }
 
         vision.update();

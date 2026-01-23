@@ -36,7 +36,9 @@ public class Intake implements Part {
 
     @Override
     public void update() {
-        return;
+        if (this.state == IntakeState.RUN){
+            this.cmdRun();
+        }
     }
 
     @Override
