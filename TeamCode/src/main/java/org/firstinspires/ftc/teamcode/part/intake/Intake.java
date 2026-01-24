@@ -31,6 +31,7 @@ public class Intake implements Part {
     public void start() {
         motor.setDirection(DcMotorSimple.Direction.REVERSE);
         motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 //        colorSensor.enableLed(true);
     }
 
