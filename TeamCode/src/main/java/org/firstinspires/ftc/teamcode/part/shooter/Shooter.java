@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -26,7 +27,6 @@ public class Shooter implements Part {
 
     Vision vision;
 
-    public StopperState stopperState;
     public ShooterState shooterState;
     public double angle;
     public double targetVel; // m/s
@@ -59,11 +59,10 @@ public class Shooter implements Part {
 
         cmdShooterRun();
 
-        shooterServo.setPosition(SHOOTER_DOWN_ANGLE);
+        shooterServo.setPosition(0);
         stopper.setPosition(SHOOTER_STOPPER_CLOSE_ANGLE);
 
         shooterState = ShooterState.RUN;
-        stopperState = StopperState.CLOSE;
 
     }
 
@@ -78,25 +77,19 @@ public class Shooter implements Part {
 
         TelemetrySystem.addClassData("Shooter", "Angle", AAA_SHOOTER_TEST_ANGLE);
         shooterServo.setPosition(AAA_SHOOTER_TEST_ANGLE);
-        if (!SHOOTER_RUNNING){
-            cmdShooterStop();
-        }
+        cmdShooterStop();
     }
 
     @Override
     public void stop() {
         cmdShooterStop();
+        if (shooterServo instanceof PwmControl) {
+            ((PwmControl) shooterServo).setPwmDisable();
+        }
     }
 
 
-    public void stopperOpen(){
-        stopper.setPosition(SHOOTER_STOPPER_OPEN_ANGLE);
-        stopperState = StopperState.OPEN;
-    }
-    public void stopperClose(){
-        stopper.setPosition(SHOOTER_STOPPER_CLOSE_ANGLE);
-        stopperState = StopperState.CLOSE;
-    }
+
 
 
 
@@ -117,14 +110,11 @@ public class Shooter implements Part {
         shooterServo.setPosition(angle);
     }
 
-    public void cmdStopperToggle() {
-        if (this.stopperState == StopperState.OPEN) {
-            this.stopperClose();
-        } else if (this.stopperState == StopperState.CLOSE) {
-            this.stopperOpen();
-        } else {
-            this.stopperClose();
-        }
+    public void cmdStopperOpen(){
+        stopper.setPosition(SHOOTER_STOPPER_OPEN_ANGLE);
+    }
+    public void cmdStopperClose(){
+        stopper.setPosition(SHOOTER_STOPPER_CLOSE_ANGLE);
     }
 
     //버릴코드!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
