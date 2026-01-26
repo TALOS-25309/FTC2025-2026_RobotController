@@ -58,15 +58,11 @@ public class TeleOpRed extends OpMode {
         // [read gamepads Signal]
         // INTAKE
         if (smartGamepad2.buttonX().isPressed()) {
-            TelemetrySystem.addClassData("GAMEPAD", "X", "clicked");
             switch (intake.state) {
                 case IDLE:
                     intake.cmdRun();
                     break;
                 case RUN:
-                    intake.cmdReverseRun();
-                    break;
-                case REVERSE_RUN:
                     intake.stop();
                     break;
                 default:
@@ -75,16 +71,12 @@ public class TeleOpRed extends OpMode {
             }
         }
 
-        // SHOOTER ANGLE
-        if (smartGamepad2.buttonA().isPressed()) {
-            TelemetrySystem.addClassData("GAMEPAD", "A", "clicked");
-            shooter.cmdSetServoAngle(Constants.SHOOTER_DOWN_ANGLE);
-        }
-
         // SHOOTER STOPPER TOGGLE
         if (smartGamepad2.buttonB().isPressed()) {
-            TelemetrySystem.addClassData("GAMEPAD", "B", "clicked");
-            shooter.cmdStopperToggle();
+            shooter.cmdStopperOpen();
+        }
+        if (smartGamepad2.buttonA().isPressed()){
+            shooter.cmdStopperClose();
         }
 
         if (smartGamepad2.buttonY().isPressed()){
