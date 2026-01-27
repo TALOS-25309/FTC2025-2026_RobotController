@@ -10,12 +10,11 @@ import org.firstinspires.ftc.teamcode.part.Constants;
 import org.firstinspires.ftc.teamcode.part.Drive;
 import org.firstinspires.ftc.teamcode.part.Part;
 import org.firstinspires.ftc.teamcode.part.intake.Intake;
-import org.firstinspires.ftc.teamcode.part.intake.IntakeState;
 import org.firstinspires.ftc.teamcode.part.shooter.Shooter;
 import org.firstinspires.ftc.teamcode.part.Turret;
 import org.firstinspires.ftc.teamcode.part.shooter.ShooterState;
-import org.firstinspires.ftc.teamcode.part.vision.Vision;
-import org.firstinspires.ftc.teamcode.part.vision.VisionConst;
+import org.firstinspires.ftc.teamcode.feature.vision.Vision;
+import org.firstinspires.ftc.teamcode.part.Constants.*;
 
 @TeleOp(name = "TeleOp")
 public class test extends OpMode {
@@ -55,7 +54,7 @@ public class test extends OpMode {
             part.start();
         }
         vision.start();
-        vision.setPipeline(VisionConst.PIPELINE.RED_GOAL);
+        vision.setPipeline(Constants.PIPELINE.RED_GOAL);
     }
 
 
@@ -83,8 +82,10 @@ public class test extends OpMode {
 
         // SHOOTER STOPPER TOGGLE
         if (smartGamepad2.buttonB().isPressed()) {
-            TelemetrySystem.addClassData("GAMEPAD", "B", "clicked");
-            shooter.cmdStopperToggle();
+            shooter.cmdStopperClose();
+        }
+        else if (smartGamepad2.buttonA().isPressed()) {
+            shooter.cmdStopperOpen();
         }
 
         if (smartGamepad2.buttonY().isPressed()){

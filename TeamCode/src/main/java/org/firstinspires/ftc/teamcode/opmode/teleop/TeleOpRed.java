@@ -1,19 +1,19 @@
 package org.firstinspires.ftc.teamcode.opmode.teleop;
 
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.feature.SmartGamepad;
 import org.firstinspires.ftc.teamcode.feature.TelemetrySystem;
-import org.firstinspires.ftc.teamcode.part.Constants;
 import org.firstinspires.ftc.teamcode.part.NewDrive;
 import org.firstinspires.ftc.teamcode.part.Part;
 import org.firstinspires.ftc.teamcode.part.intake.Intake;
 import org.firstinspires.ftc.teamcode.part.shooter.Shooter;
 import org.firstinspires.ftc.teamcode.part.Turret;
 import org.firstinspires.ftc.teamcode.part.shooter.ShooterState;
-import org.firstinspires.ftc.teamcode.part.vision.Vision;
-import org.firstinspires.ftc.teamcode.part.vision.VisionConst;
+import org.firstinspires.ftc.teamcode.feature.vision.Vision;
+import static org.firstinspires.ftc.teamcode.part.Constants.*;
 
 @TeleOp(name = "TeleOp")
 public class TeleOpRed extends OpMode {
@@ -48,7 +48,7 @@ public class TeleOpRed extends OpMode {
             part.start();
         }
         vision.start();
-        vision.setPipeline(VisionConst.PIPELINE.RED_GOAL);
+        vision.setPipeline(PIPELINE.RED_GOAL);
     }
 
     @Override

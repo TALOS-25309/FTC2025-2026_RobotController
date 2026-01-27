@@ -4,12 +4,13 @@ import static org.firstinspires.ftc.teamcode.part.Constants.*;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.feature.PID;
 import org.firstinspires.ftc.teamcode.feature.TelemetrySystem;
-import org.firstinspires.ftc.teamcode.part.vision.Vision;
+import org.firstinspires.ftc.teamcode.feature.vision.Vision;
 
 
 public class Turret implements Part {
@@ -18,6 +19,7 @@ public class Turret implements Part {
     DcMotorEx encoder;
     PID pidController;
     PID pidControllerWithEncoder;
+
     boolean isWrappingNow; // 한바퀴 회전중인지 - true 일때 대기
     boolean finishedWrapping; // 한바퀴 회전 후 - Limit 넘었을때 행동 결정
     double target_pos; // keeps the target position set on runPIDToPosition
@@ -39,12 +41,13 @@ public class Turret implements Part {
 
     @Override
     public void start() {
-        motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+//        motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+//        motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
 
         isWrappingNow = false;
         finishedWrapping = false;
-
     }
 
 
@@ -52,6 +55,8 @@ public class Turret implements Part {
     public void update() {
         double pos = encoder.getCurrentPosition();
         TelemetrySystem.addClassData("TURRET", "position", pos);
+        TelemetrySystem.addClassData("TURRET", "target_position", target_pos);
+
 
         // LIMIT : 넘으면 반대로 회전 +
         //      대신 회전한 직후에는 LIMIT 넘어도 됨
@@ -78,28 +83,31 @@ public class Turret implements Part {
             if (Math.abs(pos - target_pos) < TURRET_DIFF_THRESHOLD){
                 isWrappingNow = false;
             }
+            TelemetrySystem.addClassData("TURRET","state", 100);
             return;
         }
         if (pos < TURRET_LEFT_END || TURRET_RIGHT_END < pos){
             if (pos < TURRET_LEFT_END) runPIDToPosition(pos + TURRET_ONE_REV_TICKS);
             else                       runPIDToPosition(pos - TURRET_ONE_REV_TICKS);
             isWrappingNow = true;
+            TelemetrySystem.addClassData("TURRET","state", 200);
         }
         else if (TURRET_LEFT_LIMIT < pos && pos < TURRET_RIGHT_LIMIT) {
             runPIDWithVision();
             finishedWrapping = false;
+            TelemetrySystem.addClassData("TURRET","state", 300);
         }
         else if ((pos < TURRET_LEFT_LIMIT || pos > TURRET_RIGHT_LIMIT) && (finishedWrapping == false)) {
             if (pos < TURRET_LEFT_LIMIT) runPIDToPosition(pos + TURRET_ONE_REV_TICKS);
             else                         runPIDToPosition(pos - TURRET_ONE_REV_TICKS);
             isWrappingNow = true;
             finishedWrapping = true;
+            TelemetrySystem.addClassData("TURRET","state", 400);
         }
         else {          // <==> else if ((pos < TURRET_LEFT_LIMIT || pos > TURRET_RIGHT_LIMIT) && (finishedWrapping == true)) {
             runPIDWithVision();
+            TelemetrySystem.addClassData("TURRET", "state", 500);
         }
-
-
     }
 
     @Override
@@ -108,24 +116,32 @@ public class Turret implements Part {
     }
 
     public void runPIDWithVision(){
-        double currentAngle = vision.getPos()[0];
+        pidController.updatePID(TURRET_PID_VISION_P, TURRET_PID_VISION_I, TURRET_PID_VISION_D);
+        double currentAngle;
+
+        if (vision.tagDetected()){
+             currentAngle = vision.getAngle();
+        }else {
+//            motor.setPower(0);
+            return;
+        }
         double error = currentAngle - 0;
-        TelemetrySystem.addClassData("TURRET", "error", error);
+        if (Math.abs(error) < TURRET_PID_THRESHOLD){
+            error = 0;
+        }
         double pidOutput = pidController.update(error, -TURRET_MAXIMUM_POWER, TURRET_MAXIMUM_POWER);
+
+        TelemetrySystem.addClassData("TURRET", "error", error);
         TelemetrySystem.addClassData("TURRET", "pid", pidOutput);
         TelemetrySystem.addClassData("TURRET", "mode", "with vision");
 
+        motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         motor.setPower(pidOutput);
     }
 
     public void runPIDToPosition(double targetAngle){
-        double currentAngle = encoder.getCurrentPosition();
-        target_pos = targetAngle;
-        double error = currentAngle - targetAngle;
-        TelemetrySystem.addClassData("TURRET", "error", error);
-        double pidOutput = pidControllerWithEncoder.update(error, -TURRET_MAXIMUM_POWER, TURRET_MAXIMUM_POWER);
-        TelemetrySystem.addClassData("TURRET", "mode", "run to position");
-
-        motor.setPower(pidOutput);
+        motor.setPower(0.3);
+        motor.setTargetPosition((int) targetAngle);
+        motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
 }

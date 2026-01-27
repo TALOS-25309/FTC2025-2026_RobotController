@@ -1,4 +1,5 @@
-package org.firstinspires.ftc.teamcode.part.vision;
+package org.firstinspires.ftc.teamcode.feature.vision;
+
 
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes.FiducialResult;
@@ -6,16 +7,22 @@ import com.qualcomm.hardware.limelightvision.LLStatus;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.teamcode.part.vision.VisionConst.*;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
+import org.firstinspires.ftc.robotcore.external.navigation.Quaternion;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
+import static org.firstinspires.ftc.teamcode.part.Constants.*;
 
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.feature.TelemetrySystem;
 
 import java.util.List;
 
 public class Vision {
     private  Limelight3A LL;
-    private double x,y,z;
+    private YawPitchRollAngles rotation; // 태그의 회전 정보
+    private Position positionOnCamera;
+    private double angle;
     private boolean detected;
 
     public void init(HardwareMap hardwareMap, Telemetry telemetry) {
@@ -28,16 +35,16 @@ public class Vision {
     public void setPipeline(PIPELINE pipeline) {
         switch (pipeline){
             case RED_GOAL:
-                LL.pipelineSwitch(VisionConst.RED_PIPELINE);
+                LL.pipelineSwitch(RED_PIPELINE);
                 break;
             case BLUE_GOAL:
-                LL.pipelineSwitch(VisionConst.BLUE_PIPELINE);
+                LL.pipelineSwitch(BLUE_PIPELINE);
                 break;
             case OBELISK_DETECTION:
-                LL.pipelineSwitch(VisionConst.OBELISK_PIPELINE);
+                LL.pipelineSwitch(OBELISK_PIPELINE);
                 break;
             default:
-                LL.pipelineSwitch(VisionConst.RED_PIPELINE);
+                LL.pipelineSwitch(RED_PIPELINE);
                 break;
         }
     }
@@ -55,15 +62,18 @@ public class Vision {
             time = result.getTimestamp();
 
             fiducials = result.getFiducialResults();
+            TelemetrySystem.addClassData("VISION", "detected",detected);
             if (fiducials.isEmpty()){
                 detected = false;
             }
             else {
                 detected = true;
                 FiducialResult fiduciary = fiducials.get(0);
-                this.x = fiduciary.getTargetPoseCameraSpace().getPosition().x;
-                this.y = fiduciary.getTargetPoseCameraSpace().getPosition().y;
-                this.z = fiduciary.getTargetPoseCameraSpace().getPosition().z;
+
+                positionOnCamera = fiduciary.getTargetPoseCameraSpace().getPosition();
+                rotation = fiduciary.getTargetPoseCameraSpace().getOrientation();
+                angle = result.getTx();
+//                positionOnRobot = fiduciary.getTargetPoseRobotSpace().getPosition();
 
             }
         }
@@ -85,11 +95,18 @@ public class Vision {
         return detected;
     }
 
-    public double[] getPos(){
-        return new double[]{x,y,z};
+    public Position getPos(){
+        return positionOnCamera;
+    }
+
+    public double getAngle(){
+        return angle;
     }
 
 
+//    public Position getDistance(){
+//        return
+//    }
 
 
 

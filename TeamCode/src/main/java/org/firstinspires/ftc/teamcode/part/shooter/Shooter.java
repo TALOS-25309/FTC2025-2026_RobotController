@@ -12,9 +12,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.feature.TelemetrySystem;
 import static org.firstinspires.ftc.teamcode.part.Constants.*;
 
-import org.firstinspires.ftc.teamcode.part.Constants;
 import org.firstinspires.ftc.teamcode.part.Part;
-import org.firstinspires.ftc.teamcode.part.vision.Vision;
+import org.firstinspires.ftc.teamcode.feature.vision.Vision;
 
 
 
@@ -75,6 +74,7 @@ public class Shooter implements Part {
         double RPM = (velTick / ticksPerRev) * 60.0;
         TelemetrySystem.addClassData("Shooter", "RPM", RPM);
 
+//        TelemetrySystem.addClassData("Shooter", "Distance", vision.ge);
         TelemetrySystem.addClassData("Shooter", "Angle", AAA_SHOOTER_TEST_ANGLE);
         shooterServo.setPosition(AAA_SHOOTER_TEST_ANGLE);
         cmdShooterStop();
