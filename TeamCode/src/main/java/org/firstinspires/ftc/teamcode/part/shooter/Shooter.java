@@ -27,9 +27,8 @@ public class Shooter implements Part {
     Vision vision;
 
     public ShooterState shooterState;
-    public double angle;
-    public double targetVel; // m/s
-    public double v;
+    private double hoodAngle;
+    private boolean isBusy;
 
     public Shooter(Vision vision){
         this.vision = vision;
@@ -67,17 +66,17 @@ public class Shooter implements Part {
 
     @Override
     public void update() {
-        v = (double)AAA_SHOOTER_VELOCITY;
 
-        double velTick = shooterMotorLower.getVelocity(); // Tick/s
+
+        double velTick = shooterMotorUpper.getVelocity(); // Tick/s
         double ticksPerRev = 145.1;
         double RPM = (velTick / ticksPerRev) * 60.0;
         TelemetrySystem.addClassData("Shooter", "RPM", RPM);
+        TelemetrySystem.addClassData("Shooter", "Angle", shooterServo.getPosition());
 
-//        TelemetrySystem.addClassData("Shooter", "Distance", vision.ge);
-        TelemetrySystem.addClassData("Shooter", "Angle", AAA_SHOOTER_TEST_ANGLE);
-        shooterServo.setPosition(AAA_SHOOTER_TEST_ANGLE);
-        cmdShooterStop();
+
+        TelemetrySystem.addClassData("Shooter", "Upper Vel", shooterMotorUpper.getVelocity());
+        TelemetrySystem.addClassData("Shooter", "Lower Vel", shooterMotorLower.getVelocity());
     }
 
     @Override
@@ -90,14 +89,50 @@ public class Shooter implements Part {
 
 
 
+    public double getInterpolatedAngle(double distance) {
+        // 거리 배열 가져오기
+        double[] dists = SHOOTER_DISTANCES;
+        double[] angles = SHOOTER_ANGLES;
+
+        // 1. 범위 밖 예외 처리 (가장 가까운 값 사용)
+        if (distance <= dists[0]) return angles[0];
+        if (distance >= dists[dists.length - 1]) return angles[angles.length - 1];
+
+        // 2. 이분 탐색 등으로 구간 찾기 (데이터가 적으면 for문도 무관)
+        int index = 0;
+        for (int i = 0; i < dists.length - 1; i++) {
+            if (distance >= dists[i] && distance <= dists[i+1]) {
+                index = i;
+                break;
+            }
+        }
+
+        // 3. 선형 보간 (Linear Interpolation) 공식 적용
+        // y = y1 + (x - x1) * (y2 - y1) / (x2 - x1)
+        double x1 = dists[index];
+        double x2 = dists[index + 1];
+        double y1 = angles[index];
+        double y2 = angles[index + 1];
+
+        double resultAngle = y1 + (distance - x1) * (y2 - y1) / (x2 - x1);
+        return resultAngle;
+    }
+
+    public boolean isBusy(){
+        return isBusy;
+    }
+    public void setBusy(boolean v){
+        isBusy = v;
+    }
+
 
 
 
     // Commands
     public void cmdShooterRun(){
         // m/s / m = 1/s
-        shooterMotorUpper.setVelocity(v, AngleUnit.RADIANS);
-        shooterMotorLower.setVelocity(v, AngleUnit.RADIANS);
+        shooterMotorUpper.setVelocity(AAA_SHOOTER_VELOCITY, AngleUnit.RADIANS);
+        shooterMotorLower.setVelocity(AAA_SHOOTER_VELOCITY, AngleUnit.RADIANS);
         shooterState = ShooterState.RUN;
     }
     public void cmdShooterStop(){
@@ -106,9 +141,14 @@ public class Shooter implements Part {
         shooterState = ShooterState.STOP;
     }
 
-    public void cmdSetServoAngle(double angle){
-        shooterServo.setPosition(angle);
+
+
+    public void cmdSetAngle(double distance){
+
+        hoodAngle = getInterpolatedAngle(distance);
+        shooterServo.setPosition(hoodAngle);
     }
+
 
     public void cmdStopperOpen(){
         stopper.setPosition(SHOOTER_STOPPER_OPEN_ANGLE);
@@ -117,35 +157,4 @@ public class Shooter implements Part {
         stopper.setPosition(SHOOTER_STOPPER_CLOSE_ANGLE);
     }
 
-    //버릴코드!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    //판별식 too risky
-    //각도랑 대응하는 거리 모아두고 이분탐색으로 각도 계산
-    public double calculateShooterAngle(double V, double d, double e1, double h) {
-        double g = 9.81; // 중력가속도
-        double X = d + e1; // 수평 거리 합
-
-        // 2차 방정식 계수 계산 (A*tan^2 - B*tan + C = 0 형태에서 변형)
-        // 수식: (g*X^2 / 2*V^2) * tan^2 - X * tan + (h + g*X^2 / 2*V^2) = 0
-
-        double commonFactor = (g * X * X) / (2 * V * V);
-
-        double A = commonFactor;
-        double B = -X;
-        double C = h + commonFactor;
-
-        // 판별식 (Discriminant)
-        double delta = B * B - 4 * A * C;
-
-        if (delta < 0) {
-            // [물리적 불가능] 현재 속도(V)로는 거리가 너무 멀거나 높아서 닿지 않음
-            return Double.NaN;
-        }
-
-        // 근의 공식 적용 (일반적으로 낮은 궤적을 위해 - 부호 사용)
-        // 만약 높은 궤적(박격포 샷)이 필요하면 Math.sqrt(delta) 앞을 +로 변경
-        double tanTheta = (-B - Math.sqrt(delta)) / (2 * A);
-
-        // 라디안을 도(Degree)로 변환
-        return Math.toDegrees(Math.atan(tanTheta));
-    }
-}
+ }

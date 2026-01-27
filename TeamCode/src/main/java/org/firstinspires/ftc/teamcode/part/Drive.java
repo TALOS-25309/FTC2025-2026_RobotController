@@ -23,10 +23,10 @@ public class Drive implements Part{
     @Override
     public void init(HardwareMap hardwareMap, Telemetry telemetry) {
         TelemetrySystem.init(telemetry);
-        motorLF = hardwareMap.get(DcMotorEx.class, "LF");
-        motorLR = hardwareMap.get(DcMotorEx.class, "LR");
-        motorRF = hardwareMap.get(DcMotorEx.class, "RF");
-        motorRR = hardwareMap.get(DcMotorEx.class, "RR");
+        motorLF = hardwareMap.get(DcMotorEx.class, "leftFront");
+        motorLR = hardwareMap.get(DcMotorEx.class, "leftBack");
+        motorRF = hardwareMap.get(DcMotorEx.class, "rightFront");
+        motorRR = hardwareMap.get(DcMotorEx.class, "rightBack");
     }
 
     @Override

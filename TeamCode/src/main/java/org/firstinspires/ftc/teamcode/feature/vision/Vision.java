@@ -22,7 +22,7 @@ public class Vision {
     private  Limelight3A LL;
     private YawPitchRollAngles rotation; // 태그의 회전 정보
     private Position positionOnCamera;
-    private double angle;
+    private double angle, distance;
     private boolean detected;
 
     public void init(HardwareMap hardwareMap, Telemetry telemetry) {
@@ -70,12 +70,12 @@ public class Vision {
                 detected = true;
                 FiducialResult fiduciary = fiducials.get(0);
 
-                positionOnCamera = fiduciary.getTargetPoseCameraSpace().getPosition();
-                rotation = fiduciary.getTargetPoseCameraSpace().getOrientation();
+//                positionOnCamera = fiduciary.getTargetPoseCameraSpace().getPosition();
+//                rotation = fiduciary.getTargetPoseCameraSpace().getOrientation();
                 angle = result.getTx();
-//                positionOnRobot = fiduciary.getTargetPoseRobotSpace().getPosition();
+                distance = fiduciary.getTargetPoseRobotSpace().getPosition().z;
 
-            }
+            } // 17.73 cm
         }
         else{
             detected = false;
@@ -95,8 +95,8 @@ public class Vision {
         return detected;
     }
 
-    public Position getPos(){
-        return positionOnCamera;
+    public double getDistance(){
+        return distance;
     }
 
     public double getAngle(){
