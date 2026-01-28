@@ -1,9 +1,11 @@
 package org.firstinspires.ftc.teamcode.opmode.test;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.feature.Schedule;
 import org.firstinspires.ftc.teamcode.feature.SmartGamepad;
 import org.firstinspires.ftc.teamcode.feature.TelemetrySystem;
 import org.firstinspires.ftc.teamcode.part.Constants;
@@ -14,7 +16,6 @@ import org.firstinspires.ftc.teamcode.part.shooter.Shooter;
 import org.firstinspires.ftc.teamcode.part.Turret;
 import org.firstinspires.ftc.teamcode.part.shooter.ShooterState;
 import org.firstinspires.ftc.teamcode.feature.vision.Vision;
-import org.firstinspires.ftc.teamcode.part.Constants.*;
 
 @TeleOp(name = "TeleOp")
 public class test extends OpMode {
@@ -45,6 +46,7 @@ public class test extends OpMode {
         smartGamepad2 = new SmartGamepad(gamepad2);
 
         TelemetrySystem.init(telemetry);
+        Schedule.init();
     }
 
     @Override
@@ -62,9 +64,8 @@ public class test extends OpMode {
     public void loop() {
         handleDrive();
 
-        // [read gamepads Signal]
         // INTAKE
-        if (smartGamepad2.buttonX().isPressed()) {
+        if (smartGamepad1.buttonX().isPressed()) {
             TelemetrySystem.addClassData("GAMEPAD", "X", "clicked");
             switch (intake.state) {
                 case IDLE:
@@ -79,6 +80,16 @@ public class test extends OpMode {
             }
         }
 
+        if (smartGamepad1.buttonY().isPressed()){
+            if (shooter.shooterState == ShooterState.RUN) {
+                shooter.cmdShooterStop();
+            }
+            else{
+                shooter.cmdShooterRun();
+            }
+        }
+
+
 
         // SHOOTER STOPPER TOGGLE
         if (smartGamepad2.buttonB().isPressed()) {
@@ -88,14 +99,15 @@ public class test extends OpMode {
             shooter.cmdStopperOpen();
         }
 
-        if (smartGamepad2.buttonY().isPressed()){
-            if (shooter.shooterState == ShooterState.RUN) {
-                shooter.cmdShooterStop();
-            }
-            else{
-                shooter.cmdShooterRun();
-            }
+        if (smartGamepad2.buttonX().isPressed()){
+            turret.toggleVision();
         }
+        if (smartGamepad2.buttonLeftBumper().isPressed()){
+            turret.changeTargetPos(-50);
+        } else if (smartGamepad2.buttonRightBumper().isPressed()) {
+            turret.changeTargetPos(50);
+        }
+
 
         vision.update();
         // update parts
@@ -121,43 +133,42 @@ public class test extends OpMode {
     }
 
 
+    // commands
     // RoadRunner 로 대체 후, 제거 예정
     private void handleDrive() {
         double power = Constants.DRIVE_POWER;
 
-        if (smartGamepad2.buttonDPadUp().isDown()) {
+        if (smartGamepad1.buttonDPadUp().isDown()) {
             drive.motorLF.setPower(power);
             drive.motorLR.setPower(power);
             drive.motorRF.setPower(power);
             drive.motorRR.setPower(power);
         }
-        else if (smartGamepad2.buttonDPadDown().isDown()) {
+        else if (smartGamepad1.buttonDPadDown().isDown()) {
             drive.motorLF.setPower(-power);
             drive.motorLR.setPower(-power);
             drive.motorRF.setPower(-power);
             drive.motorRR.setPower(-power);
         }
-        else if (smartGamepad2.buttonDPadRight().isDown()) {
+        else if (smartGamepad1.buttonDPadRight().isDown()) {
             drive.motorLF.setPower(power);
             drive.motorLR.setPower(-power);
             drive.motorRF.setPower(-power);
             drive.motorRR.setPower(power);
         }
-        else if (smartGamepad2.buttonDPadLeft().isDown()) {
+        else if (smartGamepad1.buttonDPadLeft().isDown()) {
             drive.motorLF.setPower(-power);
             drive.motorLR.setPower(power);
             drive.motorRF.setPower(power);
             drive.motorRR.setPower(-power);
         }
-        else if (smartGamepad2.buttonLeftBumper().isDown()) {
-            // CCW Rotate
+        else if (smartGamepad1.buttonLeftBumper().isDown()) {
             drive.motorLF.setPower(-power);
             drive.motorLR.setPower(-power);
             drive.motorRF.setPower(power);
             drive.motorRR.setPower(power);
         }
-        else if (smartGamepad2.buttonRightBumper().isDown()) {
-            // CW Rotate
+        else if (smartGamepad1.buttonRightBumper().isDown()) {
             drive.motorLF.setPower(power);
             drive.motorLR.setPower(power);
             drive.motorRF.setPower(-power);

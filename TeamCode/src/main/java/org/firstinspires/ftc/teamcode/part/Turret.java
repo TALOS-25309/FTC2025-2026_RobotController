@@ -2,9 +2,10 @@ package org.firstinspires.ftc.teamcode.part;
 
 import static org.firstinspires.ftc.teamcode.part.Constants.*;
 
+import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -20,10 +21,8 @@ public class Turret implements Part {
     PID pidController;
     PID pidControllerWithEncoder;
 
-    boolean isWrappingNow; // 한바퀴 회전중인지 - true 일때 대기
-    boolean finishedWrapping; // 한바퀴 회전 후 - Limit 넘었을때 행동 결정
-    double target_pos; // keeps the target position set on runPIDToPosition
-
+    double targetPos; // keeps the target position set on runPIDToPosition
+    boolean usingVision;
     Vision vision;
 
     public Turret(Vision vision){
@@ -41,13 +40,8 @@ public class Turret implements Part {
 
     @Override
     public void start() {
-//        motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-//        motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-
-        isWrappingNow = false;
-        finishedWrapping = false;
+        usingVision = false;
     }
 
 
@@ -55,59 +49,15 @@ public class Turret implements Part {
     public void update() {
         double pos = encoder.getCurrentPosition();
         TelemetrySystem.addClassData("TURRET", "position", pos);
-        TelemetrySystem.addClassData("TURRET", "target_position", target_pos);
+        TelemetrySystem.addClassData("TURRET", "target_position", targetPos);
 
-
-        // LIMIT : 넘으면 반대로 회전 +
-        //      대신 회전한 직후에는 LIMIT 넘어도 됨
-        //      --> 경계 부근에서 진동하는 상황 막기
-        // END : 물리적 한계 --> 무조건 반대로 회전
-
-        // (이동중 == true) :
-            // (pid 꺼져있음)
-            // (target_pos에 도착) :
-                // 이동중 = false
-        // (pos < LEFT_END or RIGHT_END < pos) :
-            // 즉시 한바퀴 회전 + pid 끄기
-        // LEFT_LIMIT < pos < RIGHT_LIMIT :
-            // 그냥 비전 기반 pid
-            // 한바퀴 회전 후 = false
-        // (pos < LEFT_LIMIT or RIGHT_LIMIT < pos) and (한바퀴 회전 후 == false) :
-            // 즉시 한바퀴 회전 + pid 끄기
-            // 한바퀴 회전후 = true
-        // (pos < LEFT_LIMIT or RIGHT_LIMIT < pos) and (한바퀴 회전 후 == true) :
-            // 그냥 비전 기반 pid
-
-        if (isWrappingNow){
-            runPIDToPosition(target_pos);
-            if (Math.abs(pos - target_pos) < TURRET_DIFF_THRESHOLD){
-                isWrappingNow = false;
-            }
-            TelemetrySystem.addClassData("TURRET","state", 100);
-            return;
-        }
-        if (pos < TURRET_LEFT_END || TURRET_RIGHT_END < pos){
-            if (pos < TURRET_LEFT_END) runPIDToPosition(pos + TURRET_ONE_REV_TICKS);
-            else                       runPIDToPosition(pos - TURRET_ONE_REV_TICKS);
-            isWrappingNow = true;
-            TelemetrySystem.addClassData("TURRET","state", 200);
-        }
-        else if (TURRET_LEFT_LIMIT < pos && pos < TURRET_RIGHT_LIMIT) {
+        if (usingVision){
             runPIDWithVision();
-            finishedWrapping = false;
-            TelemetrySystem.addClassData("TURRET","state", 300);
         }
-        else if ((pos < TURRET_LEFT_LIMIT || pos > TURRET_RIGHT_LIMIT) && (finishedWrapping == false)) {
-            if (pos < TURRET_LEFT_LIMIT) runPIDToPosition(pos + TURRET_ONE_REV_TICKS);
-            else                         runPIDToPosition(pos - TURRET_ONE_REV_TICKS);
-            isWrappingNow = true;
-            finishedWrapping = true;
-            TelemetrySystem.addClassData("TURRET","state", 400);
+        else{
+            runPIDToPosition(targetPos);
         }
-        else {          // <==> else if ((pos < TURRET_LEFT_LIMIT || pos > TURRET_RIGHT_LIMIT) && (finishedWrapping == true)) {
-            runPIDWithVision();
-            TelemetrySystem.addClassData("TURRET", "state", 500);
-        }
+
     }
 
     @Override
@@ -137,11 +87,75 @@ public class Turret implements Part {
 
         motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         motor.setPower(pidOutput);
+        targetPos = encoder.getCurrentPosition();
     }
 
     public void runPIDToPosition(double targetAngle){
         motor.setPower(0.3);
         motor.setTargetPosition((int) targetAngle);
         motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    }
+
+    public void toggleVision(){
+        usingVision = !usingVision;
+    }
+
+    public void changeTargetPos(double v){
+        targetPos += v;
+    }
+
+    // RoadRunner Localization 안될경우, 삭제 예정
+    public Pose2d[] calculateMotionCompensation(Pose2d robotPose, Pose2d robotVel) {
+
+        // 1. 실제 골대 위치 (상수에서 가져옴)
+        Vector2d goalPos = new Vector2d(GOAL_X, GOAL_Y);
+
+        // Field Centric 속도라고 가정 (vx, vy).
+        Vector2d velocityVector = new Vector2d(robotVel.position.x, robotVel.position.y);
+
+        // 3. 가상 타겟 계산 (목표 지점 += - v0 * dt)
+        // 로봇이 움직이는 방향의 '반대'로 골대를 밀어버림
+        Vector2d virtualGoalPos1 = goalPos.minus(velocityVector.times(SHOOTER_TIME_INTERVAL_ONE));
+        Vector2d virtualGoalPos2 = goalPos.minus(velocityVector.times(SHOOTER_TIME_INTERVAL_ONE + SHOOTER_TIME_INTERVAL_TWO));
+
+        // 4. 로봇에서 가상 골대까지의 벡터 계산
+        Vector2d robotToVirtualGoal0 = goalPos.minus(robotPose.position);
+        Vector2d robotToVirtualGoal1 = virtualGoalPos1.minus(robotPose.position);
+        Vector2d robotToVirtualGoal2 = virtualGoalPos2.minus(robotPose.position);
+
+        double targetAngleRad0 = normalizeAngle(
+                Math.atan2(robotToVirtualGoal0.y, robotToVirtualGoal0.x) - robotPose.heading.log()
+        );
+        double targetAngleRad1 = normalizeAngle(
+                Math.atan2(robotToVirtualGoal1.y, robotToVirtualGoal1.x) - robotPose.heading.log()
+        );
+        double targetAngleRad2 = normalizeAngle(
+                Math.atan2(robotToVirtualGoal2.y, robotToVirtualGoal2.x) - robotPose.heading.log()
+        );
+
+        // 틱으로 변환 (Ticks per radian 등 상수 필요. 여기서는 예시)
+        double targetAngleTick0 = angleToTicks(targetAngleRad0);
+        double targetAngleTick1 = angleToTicks(targetAngleRad1);
+        double targetAngleTick2 = angleToTicks(targetAngleRad2);
+
+        // 슈터에게 넘겨줄 '가상 거리' 반환
+        return new Pose2d[]{
+                new Pose2d(robotToVirtualGoal0, targetAngleTick0),
+                new Pose2d(robotToVirtualGoal1, targetAngleTick1),
+                new Pose2d(robotToVirtualGoal2, targetAngleTick2)
+        };
+    }
+
+    // 각도 정규화 헬퍼 함수
+    private double normalizeAngle(double angle) {
+        while (angle > Math.PI) angle -= 2 * Math.PI;
+        while (angle <= -Math.PI) angle += 2 * Math.PI;
+        return angle;
+    }
+
+    // 라디안 -> 틱 변환 (Constants 값 사용 필요)
+    private double angleToTicks(double radians) {
+        // 예: 한 바퀴(2PI)가 TURRET_ONE_REV_TICKS
+        return (radians / (2 * Math.PI)) * TURRET_ONE_REV_TICKS;
     }
 }
