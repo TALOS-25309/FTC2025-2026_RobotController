@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 public class AutoIntake {
     DcMotorEx motor;
     public static double INTAKE_POWER = 1.0;
+    public static double REVERSE_POWER = 0.4;
 
     AutoIntake(DcMotorEx intakeMotor){
         motor = intakeMotor;
@@ -25,5 +26,8 @@ public class AutoIntake {
     }
     void intakeOff() {
         motor.setPower(0);
+    }
+    void intakeReverse() {
+        motor.setPower(-1 * REVERSE_POWER);
     }
 }

@@ -4,14 +4,13 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.teamcode.feature.PID;
+import org.firstinspires.ftc.teamcode.feature.TelemetrySystem;
 import org.firstinspires.ftc.teamcode.feature.vision.Vision;
 
 import com.acmerobotics.dashboard.config.Config;
 
 @Config("AutoTurret")
 public class AutoTurret {
-    // Note the motor and the encoder are both connected to the same port,
-    // thus accessible by this class.
     private final DcMotorEx motor;
 
     // PID controls
@@ -22,8 +21,10 @@ public class AutoTurret {
     boolean visionActive = false;
     private long visionStartTime;
 
+    // --- NEW: target tracking ---
+    private int targetTicks = 0;
+
     // Interface
-    // Terrible naming, but thi will keep it sorted at the web ui.
     public static double pid_P = 0.02;
     public static double pid_I = 0.0;
     public static double pid_D = 0.0;
@@ -40,27 +41,23 @@ public class AutoTurret {
         pidController = new PID(pid_P, pid_I, pid_D);
     }
 
-    void init() {
-        return;
-    }
+    void init() {}
 
     void start() {
         motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); // This is our zero from now on.
-        motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER); // This is our default. It does nothing, but why not
+        motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
 
     /**
      * Looks at a position.
-     * @param ticks Measured in ticks. CW is +, CCW is -. Zero point is straight front of the robot.
-     * @return Validity.
+     * @param ticks CW+, CCW-, 0 = forward
      */
     boolean gaze_tick(int ticks) {
-        if (visionActive)
-            return false;
-        if (ticks > runToTarget_HardLimit || ticks < -1 * runToTarget_HardLimit)
-            return false;
-        motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        if (visionActive) return false;
+        if (Math.abs(ticks) > runToTarget_HardLimit) return false;
+
+        targetTicks = ticks; // <-- store target
+
         motor.setPower(runToTarget_power);
         motor.setTargetPosition(ticks);
         motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -68,17 +65,46 @@ public class AutoTurret {
     }
 
     /**
-     * Wrapper for gaze tick, just in radians.
-     * @param radians Angle in radians. Zero point is straight front, CW+, CCW-
-     * @return Validity
+     * Wrapper for gaze_tick, radians.
      */
     boolean gaze(double radians) {
-        if (visionActive)
-            return false;
+        if (visionActive) return false;
+
         radians = Math.atan2(Math.sin(radians), Math.cos(radians));
-        long ticks = Math.round(radians * (runToTarget_TICKS_PER_180_DEG / Math.PI));
-        return gaze_tick((int)ticks);
+        int ticks = (int) Math.round(
+                radians * (runToTarget_TICKS_PER_180_DEG / Math.PI)
+        );
+        return gaze_tick(ticks);
     }
+
+    /**
+     * Turns the turret relative to its current position.
+     * @param radians CW+, CCW-
+     * @return true if command accepted
+     */
+    boolean turn(double radians) {
+        if (visionActive) return false;
+
+        // Normalize radians to [-pi, pi]
+        radians = Math.atan2(Math.sin(radians), Math.cos(radians));
+
+        int deltaTicks = (int) Math.round(
+                radians * (runToTarget_TICKS_PER_180_DEG / Math.PI)
+        );
+
+        int currentTicks = motor.getCurrentPosition();
+        int target = currentTicks + deltaTicks;
+
+        // Respect hard limits
+        if (Math.abs(target) > runToTarget_HardLimit) return false;
+
+        return gaze_tick(target);
+    }
+
+
+    // -------------------------------
+    // Vision
+    // -------------------------------
 
     void startVisionAlign() {
         visionStartTime = System.currentTimeMillis();
@@ -88,26 +114,48 @@ public class AutoTurret {
     }
 
     void visionUpdate() {
+        limelight.update();
         if (!visionActive) return;
 
         if (System.currentTimeMillis() - visionStartTime > TURRET_TIMEOUT) {
-            this.motor.setPower(0);
+            motor.setPower(0);
             visionActive = false;
-            motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             return;
         }
 
-        double current_angle = this.limelight.getAngle();
+        boolean detected = limelight.tagDetected();
+        double current_angle = limelight.getAngle();
         double error = -current_angle;
+
+        TelemetrySystem.addClassData("AutoTurret", "Det", detected);
+        TelemetrySystem.addClassData("AutoTurret", "Error", error);
+        TelemetrySystem.update();
+
         if (Math.abs(error) < TURRET_PID_THRESHOLD) {
             motor.setPower(0);
             visionActive = false;
-            motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             return;
         }
-        double pidOutput = pidController.update(error, -TURRET_MAXIMUM_POWER, TURRET_MAXIMUM_POWER);
+
+        double pidOutput = pidController.update(
+                error,
+                -TURRET_MAXIMUM_POWER,
+                TURRET_MAXIMUM_POWER
+        );
         motor.setPower(pidOutput);
-        return;
+    }
+
+    void blockingAlign() {
+        startVisionAlign();
+        while (visionActive) {
+            update();
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
     }
 
     void constantsUpdate() {
@@ -121,7 +169,6 @@ public class AutoTurret {
 
     boolean isBusy() {
         return visionActive ||
-                ((this.motor.getMode() == DcMotor.RunMode.RUN_TO_POSITION) && this.motor.isBusy());
-        // Vision tuning or running to position
+                (motor.getMode() == DcMotor.RunMode.RUN_TO_POSITION && motor.isBusy());
     }
 }

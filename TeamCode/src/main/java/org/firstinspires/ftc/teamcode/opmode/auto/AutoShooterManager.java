@@ -15,11 +15,13 @@ public class AutoShooterManager {
 
     private Servo stopper;
     private Servo hood;
+    private AutoIntake intake;
 
-    private AutoTurret turret;
+    AutoTurret turret;
+    private double offset;
 
-    public static double shooterSpeed = 105;
-    public static double stopperUp=0.77, stopperDown=0.63;
+    public static double shooterSpeed = 4.4;
+    public static double stopperUp=0.53, stopperDown=0.66;
     public static double hoodUp=0, hoodDown = 1;
     public static double shootDelay = 2000;
 
@@ -32,7 +34,8 @@ public class AutoShooterManager {
             Servo stopper,
             Servo hood,
             DcMotorEx turretMotor,
-            Vision limelight
+            Vision limelight,
+            AutoIntake intk
     ) {
         this.shooterMotor1 = shooter1; this.shooterMotor2 = shooter2;
         this.stopper = stopper;
@@ -41,11 +44,12 @@ public class AutoShooterManager {
                 turretMotor,
                 limelight
         );
+        this.intake = intk;
     }
 
     void init() {
-        this.shooterMotor1.setDirection(DcMotorSimple.Direction.REVERSE);
-        this.shooterMotor2.setDirection(DcMotorSimple.Direction.FORWARD);
+        this.shooterMotor1.setDirection(DcMotorSimple.Direction.FORWARD);
+        this.shooterMotor2.setDirection(DcMotorSimple.Direction.REVERSE);
         this.shooterMotor1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         this.shooterMotor2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         this.shooterMotor1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -87,6 +91,63 @@ public class AutoShooterManager {
         setHood(hoodPosition);
     }
 
+    void blockingShoot(double speed, double offset) {
+        this.shooterSpeed = speed;
+        closeStopper();
+        this.intake.intakeOn();
+        startMotor();
+        this.turret.startVisionAlign();
+        while (this.turret.visionActive) {
+            this.turret.update();
+        }
+        try {
+            Thread.sleep(200);
+        } catch (InterruptedException ignored) {
+        }
+        this.turret.turn(offset);
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException ignored) {
+        }
+        openStopper();
+        try {
+            Thread.sleep((int)shootDelay);
+        } catch (InterruptedException ignored) {
+        }
+        closeStopper();
+
+//        this.intake.intakeOff();
+//
+//        startMotor();
+//        this.turret.startVisionAlign();
+//        while (this.turret.visionActive) {
+//            this.turret.update();
+//        }
+//        this.turret.turn(off);
+//        try {
+//            Thread.sleep(1000);
+//        } catch (InterruptedException ignored) {
+//        }
+//        this.intake.intakeOff();
+//        openStopper();
+//        try {
+//            Thread.sleep(500);
+//        } catch (InterruptedException ignored) {
+//        }
+//        this.intake.intakeOn();
+//        try {
+//            Thread.sleep((int)shootDelay);
+//        } catch (InterruptedException ignored) {
+//        }
+//        this.intake.intakeOff();
+//        closeStopper();
+//        stopMotor();
+    }
+
+    void align() {
+        this.turret.startVisionAlign();
+    }
+
     void shoot() {
         shooting = true;
         closeStopper();
@@ -98,6 +159,11 @@ public class AutoShooterManager {
     void updateShoot() {
         if (shooting && visionAligning && (!this.turret.visionActive)) { // Align ended
             visionAligning = false;
+            this.turret.turn(this.offset);
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException ignored) {
+            }
             openStopper();
             shotAt = System.currentTimeMillis();
         }

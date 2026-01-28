@@ -29,7 +29,7 @@ public class Vision {
         LL = hardwareMap.get(Limelight3A.class, "Limelight");
     }
     public void start() {;
-        LL.setPollRateHz(250);
+        LL.setPollRateHz(40);
         LL.start();
     }
     public void setPipeline(PIPELINE pipeline) {
@@ -57,6 +57,9 @@ public class Vision {
 
         LLResult result = LL.getLatestResult();
         status = LL.getStatus();
+        TelemetrySystem.addClassData("VISION", "LL Temp", status.getTemp());
+        TelemetrySystem.addClassData("VISION", "LL CPU", status.getCpu());
+
 
         if (result != null && result.isValid()) {
             time = result.getTimestamp();
