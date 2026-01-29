@@ -82,11 +82,8 @@ public class Shooter implements Part {
     @Override
     public void stop() {
         cmdShooterStop();
-        if (shooterServo instanceof PwmControl) {
-            ((PwmControl) shooterServo).setPwmDisable();
-        }
+        shooterServo.getController().pwmDisable();
     }
-
 
 
     public double getInterpolatedAngle(double distance) {
