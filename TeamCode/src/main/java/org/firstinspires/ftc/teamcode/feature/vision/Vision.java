@@ -20,10 +20,6 @@ public class Vision {
 
     private double angle, distance;
     private boolean detected;
-    private boolean[] detectionHistory;
-    private int pointer;
-    private final int MEMORY_SIZE = 60;
-    private final double DETECTION_SUCCESS_PERCENT = 0.7;
 
     public void init(HardwareMap hardwareMap, Telemetry telemetry) {
         LL = hardwareMap.get(Limelight3A.class, "Limelight");
@@ -32,12 +28,7 @@ public class Vision {
         LL.setPollRateHz(40);
         LL.start();
 
-        detectionHistory = new boolean[MEMORY_SIZE];
-        for (int i = 0; i < MEMORY_SIZE; i++) {
-            detectionHistory[i] = false;
-        }
         detected = false;
-        pointer = 0;
         distance = 0;
     }
     public void setPipeline(PIPELINE pipeline) {
@@ -99,27 +90,20 @@ public class Vision {
 
 
         TelemetrySystem.addClassData("Vision","Timestamp", time);
-        detectionHistory[pointer] = detected;
-        pointer = (pointer + 1)%MEMORY_SIZE;
     }
 
     public int getFiducialID(){
         return fiducials.get(0).getFiducialId();
     }
 
+    // Warning : getting the status of Limelight takes a lot of time.
+    // To provide enough working rate, remove this method in the main loop.
     public LLStatus getStatus(){
         return LL.getStatus();
     }
 
     public boolean tagDetected(){
         return detected;
-    }
-    public boolean tagDetectedLong(){
-        int count = 0;
-        for (boolean tag: detectionHistory) {
-            if (tag) count ++;
-        }
-        return (double) count / MEMORY_SIZE > DETECTION_SUCCESS_PERCENT;
     }
 
     public double getDistance(){

@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.part;
 
 import static org.firstinspires.ftc.teamcode.part.Constants.*;
 
+import android.os.ParcelUuid;
+
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -24,6 +26,8 @@ public class Turret implements Part {
     boolean usingVision;
     Vision vision;
 
+//    double position;
+
     public Turret(Vision vision){
         this.vision = vision;
     }
@@ -40,8 +44,11 @@ public class Turret implements Part {
     public void start() {
         motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         usingVision = false;
+
+//        position = 0;
     }
 
+    boolean limitOverStop = false;
 
     @Override
     public void update() {
@@ -50,6 +57,12 @@ public class Turret implements Part {
         TelemetrySystem.addClassData("TURRET", "targetPosition", targetPos);
         TelemetrySystem.addClassData("TURRET", "usingVision", usingVision);
 
+        if (pos < TURRET_LEFT_END || TURRET_RIGHT_END < pos) {
+            usingVision = false;
+            limitOverStop = false;
+        }
+        targetPos = Math.max(TURRET_LEFT_END, Math.min(TURRET_RIGHT_END, targetPos));
+
         if (usingVision){
             runPIDWithVision();
         }
@@ -57,11 +70,17 @@ public class Turret implements Part {
             runPIDToPosition(targetPos);
         }
 
-        if (pos < TURRET_LEFT_END){
+        if (pos < TURRET_LEFT_END && !limitOverStop){
             motor.setPower(0);
+            limitOverStop = true;
+            targetPos = TURRET_LEFT_END/2;
+            TelemetrySystem.addClassData("TURRET", "EMERGENCY STOP", true);
         }
-        else if (pos > TURRET_RIGHT_END){
+        else if (pos > TURRET_RIGHT_END && !limitOverStop){
             motor.setPower(0);
+            limitOverStop = true;
+            targetPos = TURRET_LEFT_END/2;
+            TelemetrySystem.addClassData("TURRET", "EMERGENCY STOP", true);
         }
 
     }
@@ -77,10 +96,8 @@ public class Turret implements Part {
 
         if (vision.tagDetected()){
             currentAngle = vision.getAngle();
-        } else {
-            if (!vision.tagDetectedLong()){
-                usingVision = false;
-            }
+        }
+        else {
             return;
         }
         double error = currentAngle - 0;
@@ -108,6 +125,13 @@ public class Turret implements Part {
 
     public void toggleVision(){
         usingVision = !usingVision;
+    }
+
+    public void turnOnVision(){
+        usingVision = true;
+    }
+    public void turnOffVision(){
+        usingVision = false;
     }
 
     public void changeTargetPos(double v){

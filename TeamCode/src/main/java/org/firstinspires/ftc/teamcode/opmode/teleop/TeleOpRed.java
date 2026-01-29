@@ -70,6 +70,8 @@ public class TeleOpRed extends OpMode {
         }
         vision.start();
         vision.setPipeline(Constants.PIPELINE.RED_GOAL);
+
+
     }
 
     double lastLoopTime = 0;
@@ -83,13 +85,28 @@ public class TeleOpRed extends OpMode {
         // player 1 : Driving + Intake
 
         double rx = 0;
-        if (smartGamepad1.buttonRightBumper().isDown()) rx = -0.5;
-        else if (smartGamepad1.buttonLeftBumper().isDown()) rx = 0.5;
+        if (smartGamepad1.buttonRightBumper().isDown()) rx = -DRIVE_ROTATION_SPEED;
+        else if (smartGamepad1.buttonLeftBumper().isDown()) rx = DRIVE_ROTATION_SPEED;
         drive.setDrivePowers(
                -  Math.pow(smartGamepad1.triggerLeftStickX().getValue(), 3),
                - Math.pow(smartGamepad1.triggerLeftStickY().getValue(), 3),
                 rx
         );
+
+        if (smartGamepad1.buttonDPadUp().isHeld()){
+            drive.setDrivePowers(-0.01,0,0);
+        }
+        if (smartGamepad1.buttonDPadDown().isHeld()){
+            drive.setDrivePowers(0.01,0,0);
+        }
+        if (smartGamepad1.buttonDPadLeft().isHeld()){
+            drive.setDrivePowers(0,0.01,0);
+        }
+        if (smartGamepad1.buttonDPadRight().isHeld()){
+            drive.setDrivePowers(0,-0.01,0);
+        }
+
+
 
         if (smartGamepad1.buttonX().isPressed()) {
             intake.cmdRun();
@@ -97,54 +114,53 @@ public class TeleOpRed extends OpMode {
         else if (smartGamepad1.buttonY().isPressed()){
             intake.cmdStop();
         }
-        if (smartGamepad1.buttonDPadDown().isPressed()){
-            shooter.cmdShooterRun();
-        }
-        else if (smartGamepad1.buttonDPadUp().isPressed()){
-            shooter.cmdShooterStop();
-        }
-        if (smartGamepad1.buttonA().isPressed()){
-            shooter.setAngle(Constants.AAA_SHOOTER_TEST_ANGLE);
-        }
 
         // player 2 : Shooter + Turret
 
         if (smartGamepad2.buttonLeftBumper().isDown()){
+            turret.turnOffVision();
             turret.changeTargetPos(TURRET_ROTATION_VEL);
         } else if (smartGamepad2.buttonRightBumper().isDown()) {
+            turret.turnOffVision();
             turret.changeTargetPos(-TURRET_ROTATION_VEL);
         }
         if (smartGamepad2.triggerLeftTrigger().isHeld()){
+            turret.turnOffVision();
             turret.changeTargetPos(TURRET_ROTATION_VEL_FASTER);
         } else if (smartGamepad2.triggerRightTrigger().isHeld()){
+            turret.turnOffVision();
             turret.changeTargetPos(-TURRET_ROTATION_VEL_FASTER);
         }
 
         if (smartGamepad2.buttonDPadUp().isPressed()) {
-            shooter.cmdStopperClose();
-        } else if (smartGamepad2.buttonDPadDown().isPressed()) {
             shooter.cmdStopperOpen();
+        } else if (smartGamepad2.buttonDPadDown().isPressed()) {
+            shooter.cmdStopperClose();
         }
 
         if (smartGamepad2.buttonX().isPressed()){
             turret.toggleVision();
         }
+
         if (smartGamepad2.buttonY().isPressed()){
-            shoot();
+            shooter.cmdShooterRun();
+        }
+        if (smartGamepad2.buttonA().isPressed()){
+            shooter.cmdShooterStop();
         }
 
 
 
-        if (A_VISION_ON) vision.update();
+        vision.update();
         // update parts
         for (Part part : parts){
             part.update();
         }
 
+        shooter.cmdSetAngle(vision.getDistance());
+
 
         TelemetrySystem.addClassData("Vision", "Detected", vision.tagDetected());
-        TelemetrySystem.addClassData("Vision", "FPS", vision.getStatus().getFps());
-        TelemetrySystem.addClassData("Vision", "Dist", vision.getDistance());
 
 
         Schedule.update();
