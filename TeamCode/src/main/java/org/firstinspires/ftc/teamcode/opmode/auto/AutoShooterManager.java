@@ -48,8 +48,8 @@ public class AutoShooterManager {
     }
 
     void init() {
-        this.shooterMotor1.setDirection(DcMotorSimple.Direction.FORWARD);
-        this.shooterMotor2.setDirection(DcMotorSimple.Direction.REVERSE);
+        this.shooterMotor1.setDirection(DcMotorSimple.Direction.REVERSE);
+        this.shooterMotor2.setDirection(DcMotorSimple.Direction.FORWARD);
         this.shooterMotor1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         this.shooterMotor2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         this.shooterMotor1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -92,7 +92,8 @@ public class AutoShooterManager {
     }
 
     void blockingShoot(double speed, double offset) {
-        this.shooterSpeed = speed;
+//        this.shooterSpeed = speed;
+        this.shooterSpeed = 4.0;
         closeStopper();
         this.intake.intakeOn();
         startMotor();

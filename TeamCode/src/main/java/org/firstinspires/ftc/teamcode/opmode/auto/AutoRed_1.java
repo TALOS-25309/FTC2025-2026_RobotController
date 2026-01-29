@@ -15,9 +15,9 @@ import org.firstinspires.ftc.teamcode.feature.vision.Vision;
 import org.firstinspires.ftc.teamcode.part.Constants;
 import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
 
-@Autonomous(name = "shooterTest")
-@Config("ShooterTest")
-public class ShooterTest extends LinearOpMode {
+@Autonomous(name = "AutoRed")
+@Config("AutoRed")
+public class AutoRed_1 extends LinearOpMode {
     MecanumDrive drive;
     AutoShooterManager manager;
     AutoIntake intake;
@@ -30,11 +30,12 @@ public class ShooterTest extends LinearOpMode {
     //    Pose2d startingPoint = new Pose2d(46.8038, -49.5795, Math.toRadians(-53.8742));
     Pose2d startingPoint = new Pose2d(54.2418, -44.7952, Math.toRadians(-53.87));
     Pose2d shoot1 = new Pose2d(17.5323, -8.2525, Math.toRadians(-45));
-    Pose2d eat11 = new Pose2d(-13.5, -18, Math.toRadians(-100));
-    Pose2d eat12 = new Pose2d(-13.5, -50.5, Math.toRadians(-90));
-    Pose2d eat1_shoot2_transition = new Pose2d(-14.5, -20, Math.toRadians(-90));
-    Pose2d shoot2 = new Pose2d(11, -20, Math.toRadians(-90));
-    Pose2d eat2 = new Pose2d(11, -52, Math.toRadians(-90));
+    Pose2d eat11 = new Pose2d(-30, -28, Math.toRadians(-90));
+    Pose2d eat12 = new Pose2d(-20, -52, Math.toRadians(-90));
+    Pose2d eat1_shoot2_transition = new Pose2d(-20, -18, Math.toRadians(-90));
+    Pose2d shoot2 = new Pose2d(9.7, -18, Math.toRadians(-90));
+    Pose2d shoot2_eat2_transistion = new Pose2d(9.7, -20, Math.toRadians(-90));
+    Pose2d eat2 = new Pose2d(13, -52, Math.toRadians(-100));
     Pose2d shoot3 = shoot2;
     Pose2d eat31 = new Pose2d(-39, -20, Math.toRadians(-90));
     Pose2d eat32 = new Pose2d(-39, -53, Math.toRadians(-90));
@@ -103,55 +104,27 @@ public class ShooterTest extends LinearOpMode {
         limelight.start();
         limelight.setPipeline(Constants.PIPELINE.RED_GOAL);
         manager.start();
-        intake.intakeOn();
         manager.startMotor();
 
+        manager.lookAt(-0.2, 0.75);
         current = startingPoint;
-        manager.lookAt(-0.1, 0.5);
         Actions.runBlocking(
                 drive.actionBuilder(current)
                         .strafeToLinearHeading(shoot1.position, shoot1.heading)
                         .build()
         );
 
-        manager.blockingShoot(4.4, -0.1); // I have no idea what the units are, but 4.4 works.
 
+        intake.intakeOn();
+        manager.blockingShoot(4.4, -0.05); // I have no idea what the units are, but 4.4 works.
 
         current = drive.localizer.getPose();
-        Actions.runBlocking(
-                drive.actionBuilder(current)
-                        .strafeToLinearHeading(eat11.position, eat11.heading)
-                        .build()
-        );
-        current = drive.localizer.getPose();
-
         Actions.runBlocking(
                 drive.actionBuilder(current)
                         .strafeToLinearHeading(
-                                eat12.position,
-                                eat12.heading,
-                                intakeSpeed
+                                shoot2_eat2_transistion.position,
+                                shoot2_eat2_transistion.heading
                         )
-                        .build()
-        );
-        sleep(1000);
-
-        manager.lookAt(0.9, 0.3);
-        current = drive.localizer.getPose();
-        Actions.runBlocking(
-                drive.actionBuilder(current)
-                        .strafeToLinearHeading(eat1_shoot2_transition.position, eat1_shoot2_transition.heading)
-                        .waitSeconds(0.2)
-                        .strafeToLinearHeading(shoot2.position, shoot2.heading)
-                        .build()
-        );
-
-        manager.blockingShoot(4.4, 0);
-
-
-        current = drive.localizer.getPose();
-        Actions.runBlocking(
-                drive.actionBuilder(current)
                         .strafeToLinearHeading(
                                 eat2.position,
                                 eat2.heading,
@@ -160,29 +133,37 @@ public class ShooterTest extends LinearOpMode {
                         .build()
         );
 
-        manager.lookAt(0.9, 0.3);
+
+        manager.lookAt(0, 0.75);
         current = drive.localizer.getPose();
         Actions.runBlocking(
                 drive.actionBuilder(current)
-                        .strafeToLinearHeading(shoot3.position, shoot3.heading)
+                        .strafeToLinearHeading(shoot1.position, shoot1.heading)
                         .build()
         );
         manager.blockingShoot(4.4, 0);
 
+//        current = drive.localizer.getPose();
+//        Actions.runBlocking(
+//                drive.actionBuilder(current)
+//                        .strafeToLinearHeading(eat31.position, eat31.heading)
+//                        .waitSeconds(0.2)
+//                        .strafeToLinearHeading(
+//                                eat32.position,
+//                                eat32.heading,
+//                                intakeSpeed
+//                        )
+//                        .waitSeconds(0.2)
+//                        .strafeToLinearHeading(shoot4.position, shoot4.heading)
+//                        .build()
+//        );
+//        stopAndTest();
+
         current = drive.localizer.getPose();
         Actions.runBlocking(
                 drive.actionBuilder(current)
-                        .strafeToLinearHeading(eat31.position, eat31.heading)
-                        .waitSeconds(0.2)
-                        .strafeToLinearHeading(
-                                eat32.position,
-                                eat32.heading,
-                                intakeSpeed
-                        )
-                        .waitSeconds(0.2)
-                        .strafeToLinearHeading(shoot4.position, shoot4.heading)
+                        .strafeToLinearHeading(eat11.position, eat11.heading)
                         .build()
         );
-        stopAndTest();
     }
 }
