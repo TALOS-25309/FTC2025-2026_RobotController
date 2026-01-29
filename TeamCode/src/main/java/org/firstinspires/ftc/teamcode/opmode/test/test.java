@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.part.Turret;
 import org.firstinspires.ftc.teamcode.part.shooter.ShooterState;
 import org.firstinspires.ftc.teamcode.feature.vision.Vision;
 
-@TeleOp(name = "TeleOp")
+@TeleOp(name = "TEST")
 public class test extends OpMode {
 
     private SmartGamepad smartGamepad1, smartGamepad2;
@@ -25,7 +25,7 @@ public class test extends OpMode {
     private final Drive drive = new Drive();
     private final Vision vision = new Vision();
     private final Turret turret = new Turret(vision);
-    private final Shooter shooter = new Shooter(vision);
+    private final Shooter shooter = new Shooter();
 
     FtcDashboard dashboard;
 
@@ -106,6 +106,13 @@ public class test extends OpMode {
             turret.changeTargetPos(-50);
         } else if (smartGamepad2.buttonRightBumper().isPressed()) {
             turret.changeTargetPos(50);
+        }
+
+        if (smartGamepad2.buttonDPadUp().isPressed()){
+            shooter.setAngle(shooter.getAngle() + 0.01);
+        }
+        else if (smartGamepad2.buttonDPadDown().isPressed()){
+            shooter.setAngle(shooter.getAngle() - 0.01);
         }
 
 

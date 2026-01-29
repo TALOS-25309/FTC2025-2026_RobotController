@@ -24,15 +24,11 @@ public class Shooter implements Part {
     Servo shooterServo;
     Servo stopper;
 
-    Vision vision;
 
     public ShooterState shooterState;
     private double hoodAngle;
     private boolean isBusy;
 
-    public Shooter(Vision vision){
-        this.vision = vision;
-    }
 
     @Override
     public void init(HardwareMap hardwareMap, Telemetry telemetry) {
@@ -55,28 +51,30 @@ public class Shooter implements Part {
         shooterMotorLower.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
 
+
         cmdShooterRun();
 
-        shooterServo.setPosition(0);
+        shooterServo.setPosition(1);
         stopper.setPosition(SHOOTER_STOPPER_CLOSE_ANGLE);
 
-        shooterState = ShooterState.RUN;
+        shooterState = ShooterState.STOP;
 
     }
 
     @Override
     public void update() {
-
+        shooterMotorUpper.setVelocityPIDFCoefficients(0,0,0,SHOOTER_UPPER_PID_F);
+        shooterMotorLower.setVelocityPIDFCoefficients(0,0,0,SHOOTER_LOWER_PID_F);
 
         double velTick = shooterMotorUpper.getVelocity(); // Tick/s
         double ticksPerRev = 145.1;
         double RPM = (velTick / ticksPerRev) * 60.0;
         TelemetrySystem.addClassData("Shooter", "RPM", RPM);
+        TelemetrySystem.addClassData("Shooter", "velocity lower", shooterMotorLower.getVelocity(AngleUnit.RADIANS));
+        TelemetrySystem.addClassData("Shooter", "velocity upper", shooterMotorUpper.getVelocity(AngleUnit.RADIANS));
+
         TelemetrySystem.addClassData("Shooter", "Angle", shooterServo.getPosition());
 
-
-        TelemetrySystem.addClassData("Shooter", "Upper Vel", shooterMotorUpper.getVelocity());
-        TelemetrySystem.addClassData("Shooter", "Lower Vel", shooterMotorLower.getVelocity());
     }
 
     @Override
@@ -126,6 +124,12 @@ public class Shooter implements Part {
     }
 
 
+    public void setAngle(double angle){
+        shooterServo.setPosition(angle);
+    }
+    public double getAngle(){
+        return shooterServo.getPosition();
+    }
 
 
     // Commands
@@ -133,6 +137,7 @@ public class Shooter implements Part {
         // m/s / m = 1/s
         shooterMotorUpper.setVelocity(AAA_SHOOTER_VELOCITY, AngleUnit.RADIANS);
         shooterMotorLower.setVelocity(AAA_SHOOTER_VELOCITY, AngleUnit.RADIANS);
+
         shooterState = ShooterState.RUN;
     }
     public void cmdShooterStop(){

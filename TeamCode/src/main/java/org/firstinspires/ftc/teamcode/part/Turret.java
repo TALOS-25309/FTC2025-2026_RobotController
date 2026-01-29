@@ -19,7 +19,6 @@ public class Turret implements Part {
     DcMotorEx motor;
     DcMotorEx encoder;
     PID pidController;
-    PID pidControllerWithEncoder;
 
     double targetPos; // keeps the target position set on runPIDToPosition
     boolean usingVision;
@@ -35,7 +34,6 @@ public class Turret implements Part {
         encoder = hardwareMap.get(DcMotorEx.class, "turret");
 
         pidController = new PID(TURRET_PID_VISION_P, TURRET_PID_VISION_I, TURRET_PID_VISION_D);
-        pidControllerWithEncoder = new PID(TURRET_PID_POSITION_P, TURRET_PID_POSITION_I, TURRET_PID_POSITION_D);
     }
 
     @Override
@@ -49,13 +47,21 @@ public class Turret implements Part {
     public void update() {
         double pos = encoder.getCurrentPosition();
         TelemetrySystem.addClassData("TURRET", "position", pos);
-        TelemetrySystem.addClassData("TURRET", "target_position", targetPos);
+        TelemetrySystem.addClassData("TURRET", "targetPosition", targetPos);
+        TelemetrySystem.addClassData("TURRET", "usingVision", usingVision);
 
         if (usingVision){
             runPIDWithVision();
         }
         else{
             runPIDToPosition(targetPos);
+        }
+
+        if (pos < TURRET_LEFT_END){
+            motor.setPower(0);
+        }
+        else if (pos > TURRET_RIGHT_END){
+            motor.setPower(0);
         }
 
     }
@@ -70,9 +76,11 @@ public class Turret implements Part {
         double currentAngle;
 
         if (vision.tagDetected()){
-             currentAngle = vision.getAngle();
-        }else {
-//            motor.setPower(0);
+            currentAngle = vision.getAngle();
+        } else {
+            if (!vision.tagDetectedLong()){
+                usingVision = false;
+            }
             return;
         }
         double error = currentAngle - 0;
@@ -91,9 +99,11 @@ public class Turret implements Part {
     }
 
     public void runPIDToPosition(double targetAngle){
-        motor.setPower(0.3);
-        motor.setTargetPosition((int) targetAngle);
-        motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        if (motor.getTargetPosition() != (int)targetAngle || motor.getMode() != DcMotor.RunMode.RUN_TO_POSITION) {
+            motor.setTargetPosition((int) targetAngle);
+            motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            motor.setPower(0.7);
+        }
     }
 
     public void toggleVision(){

@@ -7,9 +7,6 @@ import com.qualcomm.hardware.limelightvision.LLStatus;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.robotcore.external.navigation.Position;
-import org.firstinspires.ftc.robotcore.external.navigation.Quaternion;
-import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import static org.firstinspires.ftc.teamcode.part.Constants.*;
 
 
@@ -20,10 +17,13 @@ import java.util.List;
 
 public class Vision {
     private  Limelight3A LL;
-    private YawPitchRollAngles rotation; // 태그의 회전 정보
-    private Position positionOnCamera;
+
     private double angle, distance;
     private boolean detected;
+    private boolean[] detectionHistory;
+    private int pointer;
+    private final int MEMORY_SIZE = 60;
+    private final double DETECTION_SUCCESS_PERCENT = 0.7;
 
     public void init(HardwareMap hardwareMap, Telemetry telemetry) {
         LL = hardwareMap.get(Limelight3A.class, "Limelight");
@@ -31,6 +31,14 @@ public class Vision {
     public void start() {;
         LL.setPollRateHz(40);
         LL.start();
+
+        detectionHistory = new boolean[MEMORY_SIZE];
+        for (int i = 0; i < MEMORY_SIZE; i++) {
+            detectionHistory[i] = false;
+        }
+        detected = false;
+        pointer = 0;
+        distance = 0;
     }
     public void setPipeline(PIPELINE pipeline) {
         switch (pipeline){
@@ -50,22 +58,20 @@ public class Vision {
     }
 
     public List<FiducialResult> fiducials;
-    public LLStatus status;
+//    public LLStatus status;
     public double time;
+
 
     public void update(){
 
         LLResult result = LL.getLatestResult();
-        status = LL.getStatus();
-        TelemetrySystem.addClassData("VISION", "LL Temp", status.getTemp());
-        TelemetrySystem.addClassData("VISION", "LL CPU", status.getCpu());
+//        status = LL.getStatus();
 
 
         if (result != null && result.isValid()) {
             time = result.getTimestamp();
 
             fiducials = result.getFiducialResults();
-            TelemetrySystem.addClassData("VISION", "detected",detected);
             if (fiducials.isEmpty()){
                 detected = false;
             }
@@ -73,29 +79,47 @@ public class Vision {
                 detected = true;
                 FiducialResult fiduciary = fiducials.get(0);
 
-//                positionOnCamera = fiduciary.getTargetPoseCameraSpace().getPosition();
-//                rotation = fiduciary.getTargetPoseCameraSpace().getOrientation();
                 angle = result.getTx();
-                distance = fiduciary.getTargetPoseRobotSpace().getPosition().z;
 
-            } // 17.73 cm
+                distance = Math.pow(
+                            Math.pow(fiduciary.getTargetPoseCameraSpace().getPosition().z, 2)
+                                + Math.pow(fiduciary.getTargetPoseCameraSpace().getPosition().x, 2),
+                            0.5
+                        );
+                TelemetrySystem.addClassData("Vision","x",fiduciary.getTargetPoseRobotSpace().getPosition().x);
+                TelemetrySystem.addClassData("Vision","z",fiduciary.getTargetPoseRobotSpace().getPosition().z);
+
+            }
+
         }
         else{
             detected = false;
             time = -1;
         }
+
+
+        TelemetrySystem.addClassData("Vision","Timestamp", time);
+        detectionHistory[pointer] = detected;
+        pointer = (pointer + 1)%MEMORY_SIZE;
     }
 
     public int getFiducialID(){
         return fiducials.get(0).getFiducialId();
     }
 
-    public double getTimestamp(){
-        return LL.getLatestResult().getTimestamp();
+    public LLStatus getStatus(){
+        return LL.getStatus();
     }
 
     public boolean tagDetected(){
         return detected;
+    }
+    public boolean tagDetectedLong(){
+        int count = 0;
+        for (boolean tag: detectionHistory) {
+            if (tag) count ++;
+        }
+        return (double) count / MEMORY_SIZE > DETECTION_SUCCESS_PERCENT;
     }
 
     public double getDistance(){
@@ -105,11 +129,6 @@ public class Vision {
     public double getAngle(){
         return angle;
     }
-
-
-//    public Position getDistance(){
-//        return
-//    }
 
 
 

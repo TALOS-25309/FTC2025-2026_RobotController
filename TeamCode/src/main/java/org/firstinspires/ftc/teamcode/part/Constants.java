@@ -12,7 +12,7 @@ public class Constants {
     public static double INTAKE_REVERSE_POWER = 0.4;
 
     // Turret
-    public static double TURRET_PID_VISION_P = -0.5;
+    public static double TURRET_PID_VISION_P = -0.015;
     public static double TURRET_PID_VISION_I = 0;
     public static double TURRET_PID_VISION_D = 0;
     public static double TURRET_PID_THRESHOLD = 0.001;
@@ -28,19 +28,18 @@ public class Constants {
 
     public static int TURRET_ONE_REV_TICKS = 1900;
     public static double TURRET_MAXIMUM_POWER = 0.6;
+    public static double TURRET_ROTATION_VEL = 4;
+    public static double TURRET_ROTATION_VEL_FASTER = 20;
 
 
     // Shooter
-    public static double AAA_SHOOTER_VELOCITY = 5; // m/s;
-    public static double AAA_SHOOTER_TEST_ANGLE = 0;
-
-    public static final double SHOOTER_WHEEL_RADIUS = 0.05; //m
-    public static final double SHOOTER_GEAR_RATIO = 3;
+    public static double AAA_SHOOTER_VELOCITY = 6; // m/s;
+    public static double AAA_SHOOTER_TEST_ANGLE = 0.7;
 
     public static boolean SHOOTER_RUNNING = true;
 
-    public static double SHOOTER_STOPPER_OPEN_ANGLE = 0.8;
-    public static double SHOOTER_STOPPER_CLOSE_ANGLE = 0.65;
+    public static double SHOOTER_STOPPER_OPEN_ANGLE = 0.38;
+    public static double SHOOTER_STOPPER_CLOSE_ANGLE = 0.52;
 
     public static double SHOOTER_TIME_INTERVAL_ONE = 0.3; // s
     public static double SHOOTER_TIME_INTERVAL_TWO = 0.3; // s
@@ -49,12 +48,15 @@ public class Constants {
     public static double SHOOTER_TIME_SHOOT_TWO = 0.6;
     public static double SHOOTER_TIME_SHOOT_THREE = 0.9;
 
-    public static double SHOOTER_TIME_DELAY = 0.5;
+    public static double SHOOTER_TIME_DELAY = 1.0;
 
+
+    public static double SHOOTER_UPPER_PID_F = 12;
+    public static double SHOOTER_LOWER_PID_F = 11.57;
 
     // 1-1 매칭
-    public static double[] SHOOTER_DISTANCES = {0,0,0,0,0,0, 0.1, 0.3}; // m
-    public static double[] SHOOTER_ANGLES    = {0,0,0,0,0,0, 0.6, 0.55}; // servo_angle
+    public static double[] SHOOTER_DISTANCES = {1.3,1.6,1.8}; // m
+    public static double[] SHOOTER_ANGLES    = {0.7,0.45,0.5}; // servo_angle
 
     public static double GOAL_X = 72.0; // 예: FTC 필드 끝
     public static double GOAL_Y = 36.0; // 예: 중앙
