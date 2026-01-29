@@ -55,8 +55,8 @@ public class Constants {
     public static double SHOOTER_LOWER_PID_F = 11.57;
 
     // 1-1 매칭
-    public static double[] SHOOTER_DISTANCES = {1.0, 1.3, 1.7}; // m
-    public static double[] SHOOTER_ANGLES    = {0.63, 0.56, 0.5}; // servo_angle
+    public static double[] SHOOTER_DISTANCES = {1.0, 1.3, 1.5, 1.7, 1.9, 2.1}; // m
+    public static double[] SHOOTER_ANGLES    = {0.95, 0.78, 0.62, 0.65, 0.64, 0.55}; // servo_angle
 
 
 
