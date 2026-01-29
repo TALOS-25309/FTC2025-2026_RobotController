@@ -34,7 +34,7 @@ public class Constants {
 
 
     // Shooter
-    public static double AAA_SHOOTER_VELOCITY = 6; // m/s;
+    public static double AAA_SHOOTER_VELOCITY = 5; // m/s;
     public static double AAA_SHOOTER_TEST_ANGLE = 0.7;
 
     public static boolean SHOOTER_RUNNING = true;

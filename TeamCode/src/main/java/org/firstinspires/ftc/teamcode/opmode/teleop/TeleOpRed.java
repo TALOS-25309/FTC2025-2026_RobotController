@@ -129,9 +129,9 @@ public class TeleOpRed extends OpMode {
             turret.changeTargetPos(-TURRET_ROTATION_VEL_FASTER);
         }
 
-        if (smartGamepad2.buttonDPadUp().isPressed()) {
+        if (smartGamepad2.buttonDPadUp().isHeld()) {
             shooter.cmdStopperOpen();
-        } else if (smartGamepad2.buttonDPadDown().isPressed()) {
+        } else {
             shooter.cmdStopperClose();
         }
 
