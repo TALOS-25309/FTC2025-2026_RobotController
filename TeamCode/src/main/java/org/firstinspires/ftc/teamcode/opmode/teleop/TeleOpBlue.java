@@ -1,7 +1,11 @@
 package org.firstinspires.ftc.teamcode.opmode.teleop;
 
+import static org.firstinspires.ftc.teamcode.part.Constants.DRIVE_ROTATION_SPEED;
+import static org.firstinspires.ftc.teamcode.part.Constants.PIPELINE;
+import static org.firstinspires.ftc.teamcode.part.Constants.TURRET_ROTATION_VEL;
+import static org.firstinspires.ftc.teamcode.part.Constants.TURRET_ROTATION_VEL_FASTER;
+
 import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -9,21 +13,17 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.feature.Schedule;
 import org.firstinspires.ftc.teamcode.feature.SmartGamepad;
 import org.firstinspires.ftc.teamcode.feature.TelemetrySystem;
-import org.firstinspires.ftc.teamcode.part.Constants;
-
-import static org.firstinspires.ftc.teamcode.part.Constants.*;
-
+import org.firstinspires.ftc.teamcode.feature.vision.Vision;
 import org.firstinspires.ftc.teamcode.part.NewDrive;
 import org.firstinspires.ftc.teamcode.part.Part;
+import org.firstinspires.ftc.teamcode.part.Turret;
 import org.firstinspires.ftc.teamcode.part.intake.Intake;
 import org.firstinspires.ftc.teamcode.part.shooter.Shooter;
-import org.firstinspires.ftc.teamcode.part.Turret;
-import org.firstinspires.ftc.teamcode.feature.vision.Vision;
 
 import java.util.List;
 
-@TeleOp(name = "Red", group = "Match")
-public class TeleOpRed extends OpMode {
+@TeleOp(name = "Blue", group = "Match")
+public class TeleOpBlue extends OpMode {
 
     private SmartGamepad smartGamepad1, smartGamepad2;
     private final Intake intake = new Intake();
@@ -66,18 +66,18 @@ public class TeleOpRed extends OpMode {
             part.start();
         }
         vision.start();
-        vision.setPipeline(Constants.PIPELINE.RED_GOAL);
+        vision.setPipeline(PIPELINE.BLUE_GOAL);
 
 
     }
 
-//    double lastLoopTime = 0;
+    double lastLoopTime = 0;
     @Override
     public void loop() {
 
-//        double currentLoopTime = System.nanoTime();
-//        double loopHz = 1000000000 / (currentLoopTime - lastLoopTime);
-//        lastLoopTime = currentLoopTime;
+        double currentLoopTime = System.nanoTime();
+        double loopHz = 1000000000 / (currentLoopTime - lastLoopTime);
+        lastLoopTime = currentLoopTime;
 
         // player 1 : Driving + Intake
 
