@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.part.shooter;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -9,12 +10,12 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.feature.Schedule;
 import org.firstinspires.ftc.teamcode.feature.TelemetrySystem;
 import static org.firstinspires.ftc.teamcode.part.Constants.*;
 
+import org.firstinspires.ftc.teamcode.part.Constants;
 import org.firstinspires.ftc.teamcode.part.Part;
-import org.firstinspires.ftc.teamcode.feature.vision.Vision;
-
 
 
 public class Shooter implements Part {
@@ -69,11 +70,19 @@ public class Shooter implements Part {
         double velTick = shooterMotorUpper.getVelocity(); // Tick/s
         double ticksPerRev = 145.1;
         double RPM = (velTick / ticksPerRev) * 60.0;
-        TelemetrySystem.addClassData("Shooter", "RPM", RPM);
-        TelemetrySystem.addClassData("Shooter", "velocity lower", shooterMotorLower.getVelocity(AngleUnit.RADIANS));
-        TelemetrySystem.addClassData("Shooter", "velocity upper", shooterMotorUpper.getVelocity(AngleUnit.RADIANS));
+//        TelemetrySystem.addClassData("Shooter", "RPM", RPM);
+//        TelemetrySystem.addClassData("Shooter", "velocity lower", shooterMotorLower.getVelocity(AngleUnit.RADIANS));
+//        TelemetrySystem.addClassData("Shooter", "velocity upper", shooterMotorUpper.getVelocity(AngleUnit.RADIANS));
 
         TelemetrySystem.addClassData("Shooter", "Angle", shooterServo.getPosition());
+
+
+        double appliedVelocity = AAA_SHOOTER_VELOCITY;
+        double realVelocity = shooterMotorUpper.getVelocity(AngleUnit.RADIANS);
+        TelemetrySystem.addClassData("Shooter","applied Velocity", appliedVelocity);
+        TelemetrySystem.addClassData("Shooter","real Velocity", realVelocity);
+
+
 
     }
 
@@ -145,8 +154,7 @@ public class Shooter implements Part {
 
 
 
-    public void cmdSetAngle(double distance){
-
+    public void cmdSetAngleByDist(double distance){
         hoodAngle = getInterpolatedAngle(distance);
         shooterServo.setPosition(hoodAngle);
     }

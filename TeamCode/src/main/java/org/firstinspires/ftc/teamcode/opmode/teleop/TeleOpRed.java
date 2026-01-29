@@ -6,21 +6,18 @@ import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.teamcode.feature.Schedule;
 import org.firstinspires.ftc.teamcode.feature.SmartGamepad;
 import org.firstinspires.ftc.teamcode.feature.TelemetrySystem;
 import org.firstinspires.ftc.teamcode.part.Constants;
 
 import static org.firstinspires.ftc.teamcode.part.Constants.*;
-import static org.firstinspires.ftc.teamcode.part.TestConst.*;
-import org.firstinspires.ftc.teamcode.part.Drive;
+
 import org.firstinspires.ftc.teamcode.part.NewDrive;
 import org.firstinspires.ftc.teamcode.part.Part;
 import org.firstinspires.ftc.teamcode.part.intake.Intake;
 import org.firstinspires.ftc.teamcode.part.shooter.Shooter;
 import org.firstinspires.ftc.teamcode.part.Turret;
-import org.firstinspires.ftc.teamcode.part.shooter.ShooterState;
 import org.firstinspires.ftc.teamcode.feature.vision.Vision;
 
 import java.util.List;
@@ -157,7 +154,7 @@ public class TeleOpRed extends OpMode {
             part.update();
         }
 
-        shooter.cmdSetAngle(vision.getDistance());
+        shooter.cmdSetAngleByDist(vision.getDistance());
 
 
         TelemetrySystem.addClassData("Vision", "Detected", vision.tagDetected());
@@ -185,46 +182,6 @@ public class TeleOpRed extends OpMode {
 
 
 
-    // 현재 위치, 속도로 발사할 때 터렛 각도 보정
-    private void shootAutoAim(){
-        // TODO: pos를 drive에서 불러오기
-        Pose2d robotPos = new Pose2d(0,0,0);
-        Pose2d robotVel = new Pose2d(0,0,0);
-        Pose2d[] nextMotion = turret.calculateMotionCompensation(robotPos, robotVel);
-
-
-        Schedule.addTask(
-                ()->{
-                    intake.cmdStop();
-                    shooter.cmdStopperOpen();
-                },
-                Schedule.RUN_INSTANTLY
-        );
-
-        Schedule.addTask(
-                () -> {
-                    intake.cmdRun();
-                    turret.runPIDToPosition(nextMotion[0].heading.log());
-                    shooter.cmdSetAngle(nextMotion[0].position.norm());
-                },
-                Constants.SHOOTER_TIME_SHOOT_ONE
-        );
-        Schedule.addTask(
-                () -> {
-                    turret.runPIDToPosition(nextMotion[1].heading.log());
-                    shooter.cmdSetAngle(nextMotion[1].position.norm());
-                },
-                Constants.SHOOTER_TIME_SHOOT_TWO
-        );
-        Schedule.addTask(
-                () -> {
-                    turret.runPIDToPosition(nextMotion[2].heading.log());
-                    shooter.cmdSetAngle(nextMotion[2].position.norm());
-                },
-                Constants.SHOOTER_TIME_SHOOT_THREE
-        );
-    }
-
     // 멈춘 상황에서 슈팅
     private void shoot(){
         if (shooter.isBusy()) return;
@@ -233,7 +190,7 @@ public class TeleOpRed extends OpMode {
                 ()->{
                     turret.runPIDWithVision();
                     double distance = vision.getDistance();
-                    shooter.cmdSetAngle(distance);
+                    shooter.cmdSetAngleByDist(distance);
                     shooter.cmdStopperClose();
                 },
                 Schedule.RUN_INSTANTLY
