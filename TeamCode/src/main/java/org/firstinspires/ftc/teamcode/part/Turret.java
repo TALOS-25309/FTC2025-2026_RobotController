@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.part;
 
 import static org.firstinspires.ftc.teamcode.part.Constants.*;
 
+import android.os.ParcelUuid;
+
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -19,11 +21,12 @@ public class Turret implements Part {
     DcMotorEx motor;
     DcMotorEx encoder;
     PID pidController;
-    PID pidControllerWithEncoder;
 
     double targetPos; // keeps the target position set on runPIDToPosition
     boolean usingVision;
     Vision vision;
+
+//    double position;
 
     public Turret(Vision vision){
         this.vision = vision;
@@ -35,27 +38,49 @@ public class Turret implements Part {
         encoder = hardwareMap.get(DcMotorEx.class, "turret");
 
         pidController = new PID(TURRET_PID_VISION_P, TURRET_PID_VISION_I, TURRET_PID_VISION_D);
-        pidControllerWithEncoder = new PID(TURRET_PID_POSITION_P, TURRET_PID_POSITION_I, TURRET_PID_POSITION_D);
     }
 
     @Override
     public void start() {
         motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         usingVision = false;
+
+//        position = 0;
     }
 
+    boolean limitOverStop = false;
 
     @Override
     public void update() {
         double pos = encoder.getCurrentPosition();
         TelemetrySystem.addClassData("TURRET", "position", pos);
-        TelemetrySystem.addClassData("TURRET", "target_position", targetPos);
+        TelemetrySystem.addClassData("TURRET", "targetPosition", targetPos);
+        TelemetrySystem.addClassData("TURRET", "usingVision", usingVision);
+
+        if (pos < TURRET_LEFT_END || TURRET_RIGHT_END < pos) {
+            usingVision = false;
+            limitOverStop = false;
+        }
+        targetPos = Math.max(TURRET_LEFT_END, Math.min(TURRET_RIGHT_END, targetPos));
 
         if (usingVision){
             runPIDWithVision();
         }
         else{
             runPIDToPosition(targetPos);
+        }
+
+        if (pos < TURRET_LEFT_END && !limitOverStop){
+            motor.setPower(0);
+            limitOverStop = true;
+            targetPos = TURRET_LEFT_END/2;
+            TelemetrySystem.addClassData("TURRET", "EMERGENCY STOP", true);
+        }
+        else if (pos > TURRET_RIGHT_END && !limitOverStop){
+            motor.setPower(0);
+            limitOverStop = true;
+            targetPos = TURRET_LEFT_END/2;
+            TelemetrySystem.addClassData("TURRET", "EMERGENCY STOP", true);
         }
 
     }
@@ -70,9 +95,9 @@ public class Turret implements Part {
         double currentAngle;
 
         if (vision.tagDetected()){
-             currentAngle = vision.getAngle();
-        }else {
-//            motor.setPower(0);
+            currentAngle = vision.getAngle();
+        }
+        else {
             return;
         }
         double error = currentAngle - 0;
@@ -91,13 +116,22 @@ public class Turret implements Part {
     }
 
     public void runPIDToPosition(double targetAngle){
-        motor.setPower(0.3);
-        motor.setTargetPosition((int) targetAngle);
-        motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        if (motor.getTargetPosition() != (int)targetAngle || motor.getMode() != DcMotor.RunMode.RUN_TO_POSITION) {
+            motor.setTargetPosition((int) targetAngle);
+            motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            motor.setPower(0.7);
+        }
     }
 
     public void toggleVision(){
         usingVision = !usingVision;
+    }
+
+    public void turnOnVision(){
+        usingVision = true;
+    }
+    public void turnOffVision(){
+        usingVision = false;
     }
 
     public void changeTargetPos(double v){
