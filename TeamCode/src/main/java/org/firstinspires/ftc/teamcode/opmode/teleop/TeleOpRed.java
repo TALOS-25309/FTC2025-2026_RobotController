@@ -52,6 +52,8 @@ public class TeleOpRed extends OpMode {
             module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
         }
 
+        turret.setTurret_offset_red(true);
+
         smartGamepad1 = new SmartGamepad(gamepad1);
         smartGamepad2 = new SmartGamepad(gamepad2);
 

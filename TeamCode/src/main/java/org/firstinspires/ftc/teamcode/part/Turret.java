@@ -25,6 +25,7 @@ public class Turret implements Part {
     int targetPos; // keeps the target position set on runPIDToPosition
     boolean usingVision;
     Vision vision;
+    double turret_offset;
 
 //    double position;
 
@@ -48,6 +49,14 @@ public class Turret implements Part {
 //        position = 0;
     }
 
+    public void setTurret_offset_red(boolean red){
+        if (red) {
+            turret_offset = TURRET_PID_VISION_OFFSET_RED;
+        }
+        else {
+            turret_offset = TURRET_PID_VISION_OFFSET_BLUE;
+        }
+    }
 
     @Override
     public void update() {
@@ -91,7 +100,7 @@ public class Turret implements Part {
         if (motor.getMode() != DcMotor.RunMode.RUN_WITHOUT_ENCODER) {
             motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         }
-        double targetAngle = TURRET_PID_VISION_OFFSET;
+        double targetAngle = turret_offset;
         double error = currentAngle - targetAngle;
         if (Math.abs(error) < TURRET_PID_THRESHOLD) {
             error = 0;

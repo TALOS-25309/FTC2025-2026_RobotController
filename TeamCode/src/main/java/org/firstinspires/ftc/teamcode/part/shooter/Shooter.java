@@ -159,6 +159,48 @@ public class Shooter implements Part {
         shooterServo.setPosition(hoodAngle);
     }
 
+    public void cmdShootThreeBalls(double distance){
+
+        double angle1, angle2, angle3;
+
+        angle1 = getInterpolatedAngle(distance);
+        angle2 = angle1 + SHOOTER_ANGLE_DIFF;
+        angle3 = angle1 + SHOOTER_ANGLE_DIFF;
+
+        Schedule.addTask(
+            ()->{
+                shooterServo.setPosition(angle1);
+            },
+            Schedule.RUN_INSTANTLY
+        );
+
+        Schedule.addTask(
+                ()->{
+                    cmdStopperOpen();
+                    shooterServo.setPosition(angle2);
+                },
+                SHOOTER_TIME_INTERVAL_ONE
+        );
+
+        Schedule.addTask(
+                ()->{
+                    shooterServo.setPosition(angle3);
+                },
+                SHOOTER_TIME_INTERVAL_TWO
+        );
+
+//        Schedule.addTask(
+//
+//        );
+
+
+
+
+
+    }
+
+
+
 
     public void cmdStopperOpen(){
         stopper.setPosition(SHOOTER_STOPPER_OPEN_ANGLE);

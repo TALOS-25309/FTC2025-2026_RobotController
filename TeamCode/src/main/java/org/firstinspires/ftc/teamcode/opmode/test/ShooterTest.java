@@ -28,6 +28,7 @@ public class ShooterTest extends LinearOpMode {
     public static boolean OPEN_STOPPER = false;      // 체크하면 링 발사 (스토퍼 열림)
     public static boolean USE_AUTO_CALCULATION = false; // 체크하면 거리기반 자동 각도 검증, 해제하면 수동 튜닝
     public static boolean ENABLE_TURRET_TRACKING = true; // 터렛 자동 추적 여부
+    public static boolean RED = true;
 
     // 수동 튜닝 값 (USE_AUTO_CALCULATION이 꺼져있을 때 사용)
     public static double TARGET_VELOCITY = 5.0;      // 목표 속도 (m/s)
@@ -55,7 +56,8 @@ public class ShooterTest extends LinearOpMode {
         turret.init(hardwareMap, telemetry);
         intake.init(hardwareMap, telemetry);
 
-        vision.setPipeline(Constants.PIPELINE.RED_GOAL);
+        if (RED)  vision.setPipeline(Constants.PIPELINE.RED_GOAL);
+        else vision.setPipeline(Constants.PIPELINE.BLUE_GOAL);
 
         telemetry.addLine("Dashboard > 'ShooterTuning' 그룹을 열어서 제어하세요.");
         telemetry.update();
