@@ -102,11 +102,11 @@ public class AutoBlue extends LinearOpMode {
         waitForStart();
 
         limelight.start();
-        limelight.setPipeline(Constants.PIPELINE.RED_GOAL);
+        limelight.setPipeline(Constants.PIPELINE.BLUE GOAL);
         manager.start();
         manager.startMotor();
 
-        manager.lookAt(Math.PI / 4, 0.75);
+        manager.lookAt(-Math.PI / 4, 0.75);
         current = startingPoint;
         Actions.runBlocking(
                 drive.actionBuilder(current)
@@ -116,7 +116,7 @@ public class AutoBlue extends LinearOpMode {
 
 
         intake.intakeOn();
-        manager.blockingShoot(4.4, -0.13); // I have no idea what the units are, but 4.4 works.
+        manager.blockingShoot(4.4, 0.13); // I have no idea what the units are, but 4.4 works.
 
         current = drive.localizer.getPose();
         Actions.runBlocking(
@@ -134,7 +134,7 @@ public class AutoBlue extends LinearOpMode {
         );
 
 
-        manager.lookAt(Math.PI / 4, 0.75);
+        manager.lookAt(-Math.PI / 4, 0.75);
         current = drive.localizer.getPose();
         Actions.runBlocking(
                 drive.actionBuilder(current)
