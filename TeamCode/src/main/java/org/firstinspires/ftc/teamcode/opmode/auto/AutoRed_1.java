@@ -29,9 +29,9 @@ public class AutoRed_1 extends LinearOpMode {
 
     //    Pose2d startingPoint = new Pose2d(46.8038, -49.5795, Math.toRadians(-53.8742));
     Pose2d startingPoint = new Pose2d(54.2418, -44.7952, Math.toRadians(-53.87));
-    Pose2d shoot1 = new Pose2d(20, -11, Math.toRadians(-45));
+    Pose2d shoot1 = new Pose2d(30, -28, Math.toRadians(-90));
     Pose2d eat11 = new Pose2d(-30, -28, Math.toRadians(-90));
-    Pose2d eat12 = new Pose2d(-20, -52, Math.toRadians(-90));
+    Pose2d eat12 = new Pose2d(-20, -55, Math.toRadians(-90));
     Pose2d eat1_shoot2_transition = new Pose2d(-20, -18, Math.toRadians(-90));
     Pose2d shoot2 = new Pose2d(9.7, -18, Math.toRadians(-90));
     Pose2d shoot2_eat2_transistion = new Pose2d(9.7, -20, Math.toRadians(-90));
@@ -106,7 +106,7 @@ public class AutoRed_1 extends LinearOpMode {
         manager.start();
         manager.startMotor();
 
-        manager.lookAt(-0.2, 0.75);
+        manager.lookAt(Math.PI / 4, 0.75);
         current = startingPoint;
         Actions.runBlocking(
                 drive.actionBuilder(current)
@@ -116,7 +116,7 @@ public class AutoRed_1 extends LinearOpMode {
 
 
         intake.intakeOn();
-        manager.blockingShoot(4.4, 0); // I have no idea what the units are, but 4.4 works.
+        manager.blockingShoot(4.4, -0.13); // I have no idea what the units are, but 4.4 works.
 
         current = drive.localizer.getPose();
         Actions.runBlocking(
@@ -134,7 +134,7 @@ public class AutoRed_1 extends LinearOpMode {
         );
 
 
-        manager.lookAt(0, 0.75);
+        manager.lookAt(Math.PI / 4, 0.75);
         current = drive.localizer.getPose();
         Actions.runBlocking(
                 drive.actionBuilder(current)
@@ -164,6 +164,8 @@ public class AutoRed_1 extends LinearOpMode {
         Actions.runBlocking(
                 drive.actionBuilder(current)
                         .strafeToLinearHeading(eat11.position, eat11.heading)
+                        .waitSeconds(0.5)
+                        .strafeToLinearHeading(eat12.position, eat12.heading)
                         .build()
         );
     }
