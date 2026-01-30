@@ -15,9 +15,9 @@ import org.firstinspires.ftc.teamcode.feature.vision.Vision;
 import org.firstinspires.ftc.teamcode.part.Constants;
 import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
 
-@Autonomous(name = "AutoBlue")
-@Config("AutoBlue")
-public class AutoBlue extends LinearOpMode {
+@Autonomous(name = "AJazzimBlue")
+@Config("AJazzimBlue")
+public class AJazzimBlue extends LinearOpMode {
     MecanumDrive drive;
     AutoShooterManager manager;
     AutoIntake intake;
