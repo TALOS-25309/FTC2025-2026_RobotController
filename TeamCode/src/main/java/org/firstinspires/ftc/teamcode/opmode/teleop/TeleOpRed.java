@@ -32,6 +32,8 @@ public class TeleOpRed extends OpMode {
     private final Turret turret = new Turret(vision);
     private final Shooter shooter = new Shooter();
 
+    boolean hoodAngelStatic;
+
     FtcDashboard dashboard;
 
     private Part[] parts = new Part[]{};
@@ -53,6 +55,7 @@ public class TeleOpRed extends OpMode {
         }
 
         turret.setTurret_offset_red(true);
+        hoodAngelStatic = false;
 
         smartGamepad1 = new SmartGamepad(gamepad1);
         smartGamepad2 = new SmartGamepad(gamepad2);
@@ -68,12 +71,12 @@ public class TeleOpRed extends OpMode {
             part.start();
         }
         vision.start();
-        vision.setPipeline(Constants.PIPELINE.RED_GOAL);
+        vision.setPipeline(PIPELINE.RED_GOAL);
 
 
     }
 
-//    double lastLoopTime = 0;
+    //    double lastLoopTime = 0;
     @Override
     public void loop() {
 
@@ -87,22 +90,22 @@ public class TeleOpRed extends OpMode {
         if (smartGamepad1.buttonRightBumper().isDown()) rx = -DRIVE_ROTATION_SPEED;
         else if (smartGamepad1.buttonLeftBumper().isDown()) rx = DRIVE_ROTATION_SPEED;
         drive.setDrivePowers(
-               -  Math.pow(smartGamepad1.triggerLeftStickX().getValue(), 3),
-               - Math.pow(smartGamepad1.triggerLeftStickY().getValue(), 3),
+                -  Math.pow(smartGamepad1.triggerLeftStickX().getValue(), 3),
+                - Math.pow(smartGamepad1.triggerLeftStickY().getValue(), 3),
                 rx
         );
 
         if (smartGamepad1.buttonDPadUp().isHeld()){
-            drive.setDrivePowers(-0.1,0,0);
+            drive.setDrivePowers(0,5,0);
         }
         if (smartGamepad1.buttonDPadDown().isHeld()){
-            drive.setDrivePowers(0.1,0,0);
+            drive.setDrivePowers(0,-5,0);
         }
         if (smartGamepad1.buttonDPadLeft().isHeld()){
-            drive.setDrivePowers(0,0.1,0);
+            drive.setDrivePowers(5,0,0);
         }
         if (smartGamepad1.buttonDPadRight().isHeld()){
-            drive.setDrivePowers(0,-0.1,0);
+            drive.setDrivePowers(-5,0,0);
         }
 
 
@@ -133,7 +136,7 @@ public class TeleOpRed extends OpMode {
 
         if (smartGamepad2.buttonDPadUp().isHeld()) {
             shooter.cmdStopperOpen();
-        } else {
+        } if (smartGamepad2.buttonDPadDown().isHeld()) {
             shooter.cmdStopperClose();
         }
 
@@ -148,6 +151,9 @@ public class TeleOpRed extends OpMode {
             shooter.cmdShooterStop();
         }
 
+        if (smartGamepad2.buttonB().isPressed()){
+            hoodAngelStatic = !hoodAngelStatic;
+        }
 
 
         vision.update();
@@ -156,7 +162,13 @@ public class TeleOpRed extends OpMode {
             part.update();
         }
 
-        shooter.cmdSetAngleByDist(vision.getDistance());
+        if (hoodAngelStatic){
+            shooter.setAngle(0.5);
+        }
+        else {
+            shooter.cmdSetAngleByDist(vision.getDistance());
+        }
+
 
 
         TelemetrySystem.addClassData("Vision", "Detected", vision.tagDetected());

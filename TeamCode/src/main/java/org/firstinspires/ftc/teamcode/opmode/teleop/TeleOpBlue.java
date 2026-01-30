@@ -1,11 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmode.teleop;
 
-import static org.firstinspires.ftc.teamcode.part.Constants.DRIVE_ROTATION_SPEED;
-import static org.firstinspires.ftc.teamcode.part.Constants.PIPELINE;
-import static org.firstinspires.ftc.teamcode.part.Constants.TURRET_ROTATION_VEL;
-import static org.firstinspires.ftc.teamcode.part.Constants.TURRET_ROTATION_VEL_FASTER;
-
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -13,12 +9,16 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.feature.Schedule;
 import org.firstinspires.ftc.teamcode.feature.SmartGamepad;
 import org.firstinspires.ftc.teamcode.feature.TelemetrySystem;
-import org.firstinspires.ftc.teamcode.feature.vision.Vision;
+import org.firstinspires.ftc.teamcode.part.Constants;
+
+import static org.firstinspires.ftc.teamcode.part.Constants.*;
+
 import org.firstinspires.ftc.teamcode.part.NewDrive;
 import org.firstinspires.ftc.teamcode.part.Part;
-import org.firstinspires.ftc.teamcode.part.Turret;
 import org.firstinspires.ftc.teamcode.part.intake.Intake;
 import org.firstinspires.ftc.teamcode.part.shooter.Shooter;
+import org.firstinspires.ftc.teamcode.part.Turret;
+import org.firstinspires.ftc.teamcode.feature.vision.Vision;
 
 import java.util.List;
 
@@ -31,6 +31,8 @@ public class TeleOpBlue extends OpMode {
     private final Vision vision = new Vision();
     private final Turret turret = new Turret(vision);
     private final Shooter shooter = new Shooter();
+
+    boolean hoodAngelStatic;
 
     FtcDashboard dashboard;
 
@@ -53,6 +55,7 @@ public class TeleOpBlue extends OpMode {
         }
 
         turret.setTurret_offset_red(false);
+        hoodAngelStatic = false;
 
         smartGamepad1 = new SmartGamepad(gamepad1);
         smartGamepad2 = new SmartGamepad(gamepad2);
@@ -73,13 +76,13 @@ public class TeleOpBlue extends OpMode {
 
     }
 
-    double lastLoopTime = 0;
+    //    double lastLoopTime = 0;
     @Override
     public void loop() {
 
-        double currentLoopTime = System.nanoTime();
-        double loopHz = 1000000000 / (currentLoopTime - lastLoopTime);
-        lastLoopTime = currentLoopTime;
+//        double currentLoopTime = System.nanoTime();
+//        double loopHz = 1000000000 / (currentLoopTime - lastLoopTime);
+//        lastLoopTime = currentLoopTime;
 
         // player 1 : Driving + Intake
 
@@ -87,22 +90,22 @@ public class TeleOpBlue extends OpMode {
         if (smartGamepad1.buttonRightBumper().isDown()) rx = -DRIVE_ROTATION_SPEED;
         else if (smartGamepad1.buttonLeftBumper().isDown()) rx = DRIVE_ROTATION_SPEED;
         drive.setDrivePowers(
-               -  Math.pow(smartGamepad1.triggerLeftStickX().getValue(), 3),
-               - Math.pow(smartGamepad1.triggerLeftStickY().getValue(), 3),
+                -  Math.pow(smartGamepad1.triggerLeftStickX().getValue(), 3),
+                - Math.pow(smartGamepad1.triggerLeftStickY().getValue(), 3),
                 rx
         );
 
         if (smartGamepad1.buttonDPadUp().isHeld()){
-            drive.setDrivePowers(-0.1,0,0);
+            drive.setDrivePowers(0,5,0);
         }
         if (smartGamepad1.buttonDPadDown().isHeld()){
-            drive.setDrivePowers(0.1,0,0);
+            drive.setDrivePowers(0,-5,0);
         }
         if (smartGamepad1.buttonDPadLeft().isHeld()){
-            drive.setDrivePowers(0,0.1,0);
+            drive.setDrivePowers(5,0,0);
         }
         if (smartGamepad1.buttonDPadRight().isHeld()){
-            drive.setDrivePowers(0,-0.1,0);
+            drive.setDrivePowers(-5,0,0);
         }
 
 
@@ -133,7 +136,7 @@ public class TeleOpBlue extends OpMode {
 
         if (smartGamepad2.buttonDPadUp().isHeld()) {
             shooter.cmdStopperOpen();
-        } else {
+        } if (smartGamepad2.buttonDPadDown().isHeld()) {
             shooter.cmdStopperClose();
         }
 
@@ -148,7 +151,13 @@ public class TeleOpBlue extends OpMode {
             shooter.cmdShooterStop();
         }
 
+        if (smartGamepad2.buttonB().isPressed()){
+            hoodAngelStatic = !hoodAngelStatic;
+        }
 
+        if (smartGamepad2.buttonPS().isPressed()){
+            shooter.cmdShooterInverseRun();
+        }
 
         vision.update();
         // update parts
@@ -156,7 +165,13 @@ public class TeleOpBlue extends OpMode {
             part.update();
         }
 
-        shooter.cmdSetAngleByDist(vision.getDistance());
+        if (hoodAngelStatic){
+            shooter.setAngle(0.5);
+        }
+        else {
+            shooter.cmdSetAngleByDist(vision.getDistance());
+        }
+
 
 
         TelemetrySystem.addClassData("Vision", "Detected", vision.tagDetected());

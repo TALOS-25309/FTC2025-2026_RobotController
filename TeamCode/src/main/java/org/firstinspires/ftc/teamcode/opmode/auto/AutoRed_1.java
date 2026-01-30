@@ -29,7 +29,7 @@ public class AutoRed_1 extends LinearOpMode {
 
     //    Pose2d startingPoint = new Pose2d(46.8038, -49.5795, Math.toRadians(-53.8742));
     Pose2d startingPoint = new Pose2d(54.2418, -44.7952, Math.toRadians(-53.87));
-    Pose2d shoot1 = new Pose2d(17.5323, -8.2525, Math.toRadians(-45));
+    Pose2d shoot1 = new Pose2d(20, -11, Math.toRadians(-45));
     Pose2d eat11 = new Pose2d(-30, -28, Math.toRadians(-90));
     Pose2d eat12 = new Pose2d(-20, -52, Math.toRadians(-90));
     Pose2d eat1_shoot2_transition = new Pose2d(-20, -18, Math.toRadians(-90));
@@ -116,7 +116,7 @@ public class AutoRed_1 extends LinearOpMode {
 
 
         intake.intakeOn();
-        manager.blockingShoot(4.4, -0.05); // I have no idea what the units are, but 4.4 works.
+        manager.blockingShoot(4.4, 0); // I have no idea what the units are, but 4.4 works.
 
         current = drive.localizer.getPose();
         Actions.runBlocking(
@@ -159,6 +159,7 @@ public class AutoRed_1 extends LinearOpMode {
 //        );
 //        stopAndTest();
 
+        manager.lookAt(0, 0);
         current = drive.localizer.getPose();
         Actions.runBlocking(
                 drive.actionBuilder(current)

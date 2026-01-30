@@ -159,6 +159,7 @@ public class AutoBlue extends LinearOpMode {
 //        );
 //        stopAndTest();
 
+        manager.lookAt(0, 0);
         current = drive.localizer.getPose();
         Actions.runBlocking(
                 drive.actionBuilder(current)

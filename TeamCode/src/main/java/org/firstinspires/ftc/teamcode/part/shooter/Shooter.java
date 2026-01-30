@@ -1,11 +1,9 @@
 package org.firstinspires.ftc.teamcode.part.shooter;
 
-import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -14,7 +12,6 @@ import org.firstinspires.ftc.teamcode.feature.Schedule;
 import org.firstinspires.ftc.teamcode.feature.TelemetrySystem;
 import static org.firstinspires.ftc.teamcode.part.Constants.*;
 
-import org.firstinspires.ftc.teamcode.part.Constants;
 import org.firstinspires.ftc.teamcode.part.Part;
 
 
@@ -150,6 +147,10 @@ public class Shooter implements Part {
         shooterMotorUpper.setPower(0);
         shooterMotorLower.setPower(0);
         shooterState = ShooterState.STOP;
+    }
+    public void cmdShooterInverseRun(){
+        shooterMotorUpper.setPower(SHOOTER_POWER_REVERSE);
+        shooterMotorLower.setPower(SHOOTER_POWER_REVERSE);
     }
 
 
