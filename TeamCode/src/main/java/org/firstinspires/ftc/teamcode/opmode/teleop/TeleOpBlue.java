@@ -96,16 +96,16 @@ public class TeleOpBlue extends OpMode {
         );
 
         if (smartGamepad1.buttonDPadUp().isHeld()){
-            drive.setDrivePowers(0,5,0);
+            drive.setDrivePowers(0,2,0);
         }
         if (smartGamepad1.buttonDPadDown().isHeld()){
-            drive.setDrivePowers(0,-5,0);
+            drive.setDrivePowers(0,-2,0);
         }
         if (smartGamepad1.buttonDPadLeft().isHeld()){
-            drive.setDrivePowers(5,0,0);
+            drive.setDrivePowers(2,0,0);
         }
         if (smartGamepad1.buttonDPadRight().isHeld()){
-            drive.setDrivePowers(-5,0,0);
+            drive.setDrivePowers(-2,0,0);
         }
 
 
@@ -134,9 +134,13 @@ public class TeleOpBlue extends OpMode {
             turret.changeTargetPos(-TURRET_ROTATION_VEL_FASTER);
         }
 
-        if (smartGamepad2.buttonDPadUp().isHeld()) {
-            shooter.cmdStopperOpen();
-        } if (smartGamepad2.buttonDPadDown().isHeld()) {
+        if (smartGamepad2.buttonDPadUp().isHeld() || smartGamepad1.buttonA().isHeld()) {
+            if (Math.max(
+                    Math.abs(shooter.shooterMotorUpper.getVelocity()),
+                    Math.abs(shooter.shooterMotorLower.getVelocity())
+            ) > 1)
+                shooter.cmdStopperOpen();
+        } else {
             shooter.cmdStopperClose();
         }
 
@@ -154,7 +158,6 @@ public class TeleOpBlue extends OpMode {
         if (smartGamepad2.buttonB().isPressed()){
             hoodAngelStatic = !hoodAngelStatic;
         }
-
         if (smartGamepad2.buttonPS().isPressed()){
             shooter.cmdShooterInverseRun();
         }

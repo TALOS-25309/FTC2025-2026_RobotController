@@ -78,6 +78,19 @@ public class ShooterTest extends LinearOpMode {
             // -----------------------------------------------------
             // 1. 터렛 제어
             // -----------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
             if (ENABLE_TURRET_TRACKING) {
                 turret.runPIDWithVision();
             } else {

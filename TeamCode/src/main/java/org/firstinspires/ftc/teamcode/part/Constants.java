@@ -35,14 +35,14 @@ public class Constants {
 
 
     // Shooter
-    public static double AAA_SHOOTER_VELOCITY = 10; // m/s;
+    public static double AAA_SHOOTER_VELOCITY = 5.5; // m/s;
     public static double SHOOTER_POWER_REVERSE = -0.5;
     public static double AAA_SHOOTER_TEST_ANGLE = 0.7;
 
     public static boolean SHOOTER_RUNNING = true;
 
-    public static double SHOOTER_STOPPER_OPEN_ANGLE = 0.53;
-    public static double SHOOTER_STOPPER_CLOSE_ANGLE = 0.63;
+    public static double SHOOTER_STOPPER_OPEN_ANGLE = 0.68;
+    public static double SHOOTER_STOPPER_CLOSE_ANGLE = 0.83;
 
     public static double SHOOTER_TIME_INTERVAL_ONE = 0.2; // s
     public static double SHOOTER_TIME_INTERVAL_TWO = 0.2; // s
@@ -58,7 +58,7 @@ public class Constants {
 
     // 1-1 매칭
     public static double[] SHOOTER_DISTANCES = {1.0, 1.3, 1.5, 1.7, 2.0}; // m
-    public static double[] SHOOTER_ANGLES    = {0.95, 0.78, 0.62, 0.65, 0.53}; // servo_angle
+    public static double[] SHOOTER_ANGLES    = {0.1, 0.3, 0.4, 0.57, 0.63}; // servo_angle
 
 
 

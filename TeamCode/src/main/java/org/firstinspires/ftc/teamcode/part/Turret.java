@@ -91,10 +91,9 @@ public class Turret implements Part {
         pidController.updatePID(TURRET_PID_VISION_P, TURRET_PID_VISION_I, TURRET_PID_VISION_D);
         double currentAngle;
 
-        if (vision.tagDetected()) {
+        if (vision.tagDetectedLong()) {
             currentAngle = vision.getAngle();
         } else {
-            motor.setPower(0);
             return;
         }
         if (motor.getMode() != DcMotor.RunMode.RUN_WITHOUT_ENCODER) {
@@ -112,7 +111,6 @@ public class Turret implements Part {
         TelemetrySystem.addClassData("TURRET", "mode", "with vision");
 
         motor.setPower(pidOutput);
-        targetPos = encoder.getCurrentPosition();
     }
 
     public void runPIDToPosition(int targetPos) {

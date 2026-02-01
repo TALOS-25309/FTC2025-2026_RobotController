@@ -34,8 +34,8 @@ public class AutoRed_1 extends LinearOpMode {
     Pose2d eat12 = new Pose2d(-20, -55, Math.toRadians(-90));
     Pose2d eat1_shoot2_transition = new Pose2d(-20, -18, Math.toRadians(-90));
     Pose2d shoot2 = new Pose2d(9.7, -18, Math.toRadians(-90));
-    Pose2d shoot2_eat2_transistion = new Pose2d(9.7, -20, Math.toRadians(-90));
-    Pose2d eat2 = new Pose2d(13, -52, Math.toRadians(-100));
+    Pose2d shoot2_eat2_transistion = new Pose2d(9, -20, Math.toRadians(-90));
+    Pose2d eat2 = new Pose2d(9, -52, Math.toRadians(-100));
     Pose2d shoot3 = shoot2;
     Pose2d eat31 = new Pose2d(-39, -20, Math.toRadians(-90));
     Pose2d eat32 = new Pose2d(-39, -53, Math.toRadians(-90));
@@ -104,9 +104,10 @@ public class AutoRed_1 extends LinearOpMode {
         limelight.start();
         limelight.setPipeline(Constants.PIPELINE.RED_GOAL);
         manager.start();
+        sleep(1000);
         manager.startMotor();
 
-        manager.lookAt(Math.PI / 4, 0.75);
+        manager.lookAt(Math.PI / 4, 0.6);
         current = startingPoint;
         Actions.runBlocking(
                 drive.actionBuilder(current)
@@ -116,7 +117,7 @@ public class AutoRed_1 extends LinearOpMode {
 
 
         intake.intakeOn();
-        manager.blockingShoot(4.4, -0.13); // I have no idea what the units are, but 4.4 works.
+        manager.blockingShoot(4.5, -0.18); // I have no idea what the units are, but 4.4 works.
 
         current = drive.localizer.getPose();
         Actions.runBlocking(
@@ -134,7 +135,7 @@ public class AutoRed_1 extends LinearOpMode {
         );
 
 
-        manager.lookAt(Math.PI / 4, 0.75);
+        manager.lookAt(Math.PI / 4, 0.57);
         current = drive.localizer.getPose();
         Actions.runBlocking(
                 drive.actionBuilder(current)
@@ -164,8 +165,6 @@ public class AutoRed_1 extends LinearOpMode {
         Actions.runBlocking(
                 drive.actionBuilder(current)
                         .strafeToLinearHeading(eat11.position, eat11.heading)
-                        .waitSeconds(0.5)
-                        .strafeToLinearHeading(eat12.position, eat12.heading)
                         .build()
         );
     }

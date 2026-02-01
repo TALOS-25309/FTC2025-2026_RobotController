@@ -61,8 +61,8 @@ public class Shooter implements Part {
 
     @Override
     public void update() {
-        shooterMotorUpper.setVelocityPIDFCoefficients(0,0,0,SHOOTER_UPPER_PID_F);
-        shooterMotorLower.setVelocityPIDFCoefficients(0,0,0,SHOOTER_LOWER_PID_F);
+        shooterMotorUpper.setVelocityPIDFCoefficients(0.05,0,0,SHOOTER_UPPER_PID_F);
+        shooterMotorLower.setVelocityPIDFCoefficients(0.05,0,0,SHOOTER_LOWER_PID_F);
 
         double velTick = shooterMotorUpper.getVelocity(); // Tick/s
         double ticksPerRev = 145.1;

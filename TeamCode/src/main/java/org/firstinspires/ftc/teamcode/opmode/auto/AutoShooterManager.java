@@ -21,7 +21,7 @@ public class AutoShooterManager {
     private double offset;
 
     public static double shooterSpeed = 4.4;
-    public static double stopperUp=0.53, stopperDown=0.66;
+    public static double stopperUp=0.68, stopperDown=0.83;
     public static double hoodUp=0, hoodDown = 1;
     public static double shootDelay = 2000;
 
@@ -93,7 +93,7 @@ public class AutoShooterManager {
 
     void blockingShoot(double speed, double offset) {
 //        this.shooterSpeed = speed;
-        this.shooterSpeed = 4.0;
+        this.shooterSpeed = 4.1;
         closeStopper();
         this.intake.intakeOn();
         startMotor();
@@ -105,7 +105,8 @@ public class AutoShooterManager {
             Thread.sleep(200);
         } catch (InterruptedException ignored) {
         }
-        this.turret.turn(offset);
+        if (Math.abs(offset) > 0.0001)
+            this.turret.turn(offset);
         try {
             Thread.sleep(2000);
         } catch (InterruptedException ignored) {

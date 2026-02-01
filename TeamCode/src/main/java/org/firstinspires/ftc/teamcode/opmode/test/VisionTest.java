@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmode.test; // 패키지명은 상황에 맞게 수정하세요
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -19,6 +21,7 @@ public class VisionTest extends LinearOpMode {
 
     @Override
     public void runOpMode() {
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         TelemetrySystem.init(telemetry);
 
         // 1. Bulk Read 설정 (Vision만 쓸 때는 필수까진 아니지만, 습관화하는 것이 좋음)
@@ -64,10 +67,14 @@ public class VisionTest extends LinearOpMode {
             telemetry.addData("Loop Time (ms)", "%.1f ms", loopTimeMs);
 
             telemetry.addData("=== Vision Info ===", "");
+            telemetry.addData("Time Stamp", vision.time);
+
             boolean detected = vision.tagDetected();
             telemetry.addData("Tag Detected?", detected);
-//            telemetry.addData("CPU temp", "%.1f", vision.getStatus().getTemp());
-//            telemetry.addData("FPS", "%.1f", vision.getStatus().getFps());
+
+            boolean longDeteced = vision.tagDetectedLong();
+//            telemetry.addData("Tag Long Deteced Percentage", longDeteced);
+            telemetry.addData("Tag Long Deteced?", longDeteced);
 
             if (detected) {
                 // Vision.java에 getter가 있다면 아래처럼 값을 가져와 찍어봅니다.
@@ -83,6 +90,7 @@ public class VisionTest extends LinearOpMode {
             // (Vision.java 내부 로직 확인용)
 
             telemetry.update();
+            TelemetrySystem.update();
         }
     }
 }
